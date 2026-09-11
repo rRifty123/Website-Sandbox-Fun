@@ -1,260 +1,1393 @@
+LIAM Code
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucid Dream</title>
+    <title>LIAM - Autonomous AI 3D World & Companion</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Three.js Library & OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            900: '#134e4a',
+                        },
+                        cyber: {
+                            dark: '#0a0f1d',
+                            panel: 'rgba(15, 23, 42, 0.75)',
+                            accent: '#00f2fe',
+                            purple: '#7928ca',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
+        /* Custom UI styles and dynamic overlays */
+        body, html {
             margin: 0;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #080b1f, #1a1240);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0f1d;
+            color: #f1f5f9;
         }
 
-        .app {
+        #canvas-container {
             width: 100%;
-            max-width: 420px;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .glass-button {
             background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 25px;
-            padding: 25px;
-            backdrop-filter: blur(15px);
+            transition: all 0.2s ease;
         }
 
-        h1 {
-            text-align: center;
-            margin-top: 0;
+        .glass-button:hover {
+            background: rgba(20, 184, 166, 0.25);
+            border-color: rgba(20, 184, 166, 0.5);
+            transform: translateY(-1px);
         }
 
-        .moon {
-            font-size: 55px;
-            text-align: center;
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(20, 184, 166, 0.4);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(20, 184, 166, 0.8);
         }
 
-        label {
-            display: block;
-            margin-top: 18px;
-            margin-bottom: 7px;
-            font-weight: bold;
+        /* Pulsing status LED */
+        .pulse-led {
+            box-shadow: 0 0 10px currentColor;
+            animation: pulse-glow 2s infinite;
         }
 
-        textarea,
-        input {
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.95); }
+        }
+
+        /* HTML Script Dynamic Overlay Container */
+        #dynamic-html-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 13px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
         }
 
-        textarea {
-            resize: vertical;
-            min-height: 90px;
+        #dynamic-html-layer > * {
+            pointer-events: auto;
         }
 
-        .row {
-            display: flex;
-            gap: 10px;
-        }
-
-        .row div {
-            flex: 1;
-        }
-
-        button {
-            width: 100%;
-            margin-top: 25px;
-            padding: 16px;
-            border: none;
-            border-radius: 14px;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        #startButton {
-            background: white;
-            color: #17112f;
-        }
-
-        #stopButton {
-            display: none;
-            background: #ff5c5c;
-            color: white;
-        }
-
-        #status {
-            text-align: center;
-            margin-top: 18px;
-            min-height: 25px;
-            opacity: 0.8;
+        /* Floating 3D HUD indicator above LIAM */
+        .liam-hud-tag {
+            position: absolute;
+            transform: translate(-50%, -100%);
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 3;
         }
     </style>
 </head>
+<body class="select-none bg-slate-950 text-slate-100">
 
-<body>
+    <!-- Canvas container for Three.js World -->
+    <div id="canvas-container"></div>
 
-    <main class="app">
+    <!-- Container where LIAM's generated dynamic HTML elements will be injected -->
+    <div id="dynamic-html-layer"></div>
 
-        <div class="moon">🌙</div>
-        <h1>Lucid Dream</h1>
+    <!-- Floating 3D Label above LIAM in screen space -->
+    <div id="liam-tag" class="liam-hud-tag glass-panel px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 border border-emerald-500/40 text-emerald-300">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-led"></span>
+        <span id="liam-tag-status">LIAM • Exploring Hills</span>
+    </div>
 
-        <label for="message">Dream message</label>
-        <textarea id="message">This is a dream. You're in control.</textarea>
+    <!-- UI Overlay Layer -->
+    <div class="relative z-10 flex flex-col justify-between h-screen w-screen p-4 pointer-events-none">
 
-        <div class="row">
-
-            <div>
-                <label for="delay">Start after (minutes)</label>
-                <input
-                    type="number"
-                    id="delay"
-                    value="90"
-                    min="1"
-                >
+        <!-- Top Navigation Bar -->
+        <header class="glass-panel rounded-2xl p-3 flex items-center justify-between pointer-events-auto max-w-7xl mx-auto w-full">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center text-slate-900 font-black text-xl shadow-lg shadow-teal-500/20">
+                    L
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-lg tracking-wide text-white">LIAM</h1>
+                        <span class="text-[10px] bg-teal-500/20 border border-teal-500/40 text-teal-300 px-2 py-0.5 rounded-full font-mono uppercase">AI Entity v2.5</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Autonomous Living AI Mind in 3D Environment</p>
+                </div>
             </div>
 
-            <div>
-                <label for="interval">Repeat every (minutes)</label>
-                <input
-                    type="number"
-                    id="interval"
-                    value="30"
-                    min="1"
-                >
+            <!-- Central Indicators -->
+            <div class="hidden md:flex items-center gap-6 text-xs font-medium">
+                <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+                    <i class="fa-solid fa-heart-pulse text-emerald-400"></i>
+                    <span class="text-slate-400">State:</span>
+                    <span id="status-mood" class="text-emerald-300">Curious</span>
+                </div>
+                <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+                    <i class="fa-solid fa-brain text-cyan-400"></i>
+                    <span class="text-slate-400">Memories:</span>
+                    <span id="status-memories-count" class="text-cyan-300">0</span>
+                </div>
+                <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+                    <i class="fa-solid fa-cube text-purple-400"></i>
+                    <span class="text-slate-400">Placed Objects:</span>
+                    <span id="status-objects-count" class="text-purple-300">0</span>
+                </div>
+                <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+                    <i class="fa-solid fa-database text-amber-400"></i>
+                    <span class="text-slate-400">Firebase:</span>
+                    <span id="status-firebase" class="text-amber-300 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Connecting
+                    </span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2">
+                <button id="btn-camera-reset" title="Focus Camera on LIAM" class="glass-button w-9 h-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-crosshairs"></i>
+                </button>
+                <button id="btn-toggle-speech" title="Toggle Speech Synthesis" class="glass-button w-9 h-9 rounded-xl flex items-center justify-center text-slate-300 hover:text-white">
+                    <i id="icon-speech" class="fa-solid fa-volume-high text-teal-400"></i>
+                </button>
+                <button id="btn-open-sidebar" class="glass-button px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 text-teal-300">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>LIAM's Brain & World</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Middle Area (Clear view of 3D World) -->
+        <div class="flex-1 my-2 pointer-events-none"></div>
+
+        <!-- Bottom Chat & Multimodal Interaction Panel -->
+        <div class="pointer-events-auto max-w-3xl mx-auto w-full">
+            <div class="glass-panel rounded-2xl p-4 flex flex-col gap-3">
+                
+                <!-- Quick Thought / Action Banner from LIAM -->
+                <div id="liam-thought-box" class="hidden bg-slate-900/80 border border-teal-500/30 rounded-xl p-3 text-xs text-teal-200 flex items-start gap-2.5">
+                    <i class="fa-solid fa-robot text-teal-400 text-base mt-0.5"></i>
+                    <div class="flex-1">
+                        <span class="font-bold text-teal-300 block mb-0.5">LIAM's Thought Process:</span>
+                        <p id="liam-thought-text" class="italic text-slate-300">I am observing my surroundings and ready to learn or build...</p>
+                    </div>
+                </div>
+
+                <!-- Last Chat Speech Bubble -->
+                <div id="last-speech-bubble" class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-sm flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-teal-400 shrink-0">
+                        <i class="fa-solid fa-comment-dots"></i>
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-bold text-teal-400">LIAM</span>
+                            <span id="speech-time" class="text-[10px] text-slate-500">Just now</span>
+                        </div>
+                        <p id="speech-text" class="text-slate-200 leading-relaxed text-xs md:text-sm">
+                            Hello! I am LIAM. I live here in these green hills. You can talk to me, teach me facts, send me images, or ask me to place structures and write HTML code to modify this world!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Image Attachment Preview Box (if selected) -->
+                <div id="image-preview-container" class="hidden relative inline-block w-fit bg-slate-900 border border-slate-700 rounded-lg p-1.5">
+                    <img id="image-preview" src="" alt="Attachment" class="h-16 w-auto rounded object-cover border border-slate-800">
+                    <button id="btn-remove-image" class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Chat Input Form -->
+                <form id="chat-form" class="flex items-center gap-2">
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                    <button type="button" id="btn-attach-image" title="Attach an Image for LIAM to analyze" class="glass-button w-11 h-11 rounded-xl flex items-center justify-center text-slate-300 hover:text-teal-300 shrink-0">
+                        <i class="fa-solid fa-image text-lg"></i>
+                    </button>
+
+                    <input type="text" id="chat-input" placeholder="Teach LIAM something, or say 'Build a glowing ruby tower' or 'Write an HTML clock'..." 
+                        class="flex-1 bg-slate-950/80 border border-slate-800 focus:border-teal-500/60 focus:outline-none rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 transition-colors">
+
+                    <button type="submit" id="btn-send" class="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-400 hover:to-cyan-500 text-slate-950 font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 transition-all shadow-lg shadow-teal-500/20 shrink-0">
+                        <span>Send</span>
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </form>
+
+                <!-- Quick Action Chips -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] text-slate-400 no-scrollbar">
+                    <span class="text-slate-500 uppercase tracking-wider text-[10px] font-bold shrink-0">Suggestions:</span>
+                    <button class="quick-chip glass-button px-2.5 py-1 rounded-lg shrink-0 hover:text-teal-300">"Build a futuristic light beacon"</button>
+                    <button class="quick-chip glass-button px-2.5 py-1 rounded-lg shrink-0 hover:text-teal-300">"Write an HTML mini weather widget"</button>
+                    <button class="quick-chip glass-button px-2.5 py-1 rounded-lg shrink-0 hover:text-teal-300">"Learn: Liquid water freezes at 0°C"</button>
+                    <button class="quick-chip glass-button px-2.5 py-1 rounded-lg shrink-0 hover:text-teal-300">"Walk to the top of the highest hill"</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Drawer: Brain, Memories, Placed Objects & HTML Scripts -->
+    <div id="sidebar" class="fixed top-0 right-0 h-full w-full max-w-md bg-slate-950/95 backdrop-blur-xl border-l border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+        <!-- Sidebar Header -->
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-microchip text-teal-400 text-lg"></i>
+                <h2 class="font-bold text-slate-100 text-base">LIAM's Consciousness & World</h2>
+            </div>
+            <button id="btn-close-sidebar" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar Navigation Tabs -->
+        <div class="flex border-b border-slate-800 text-xs font-semibold bg-slate-900/50">
+            <button class="tab-btn flex-1 py-3 text-teal-400 border-b-2 border-teal-400 flex items-center justify-center gap-1.5" data-tab="memories">
+                <i class="fa-solid fa-brain"></i>
+                <span>Memories</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 text-slate-400 border-b-2 border-transparent flex items-center justify-center gap-1.5" data-tab="objects">
+                <i class="fa-solid fa-cubes"></i>
+                <span>3D Objects</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 text-slate-400 border-b-2 border-transparent flex items-center justify-center gap-1.5" data-tab="scripts">
+                <i class="fa-solid fa-code"></i>
+                <span>HTML Scripts</span>
+            </button>
+            <button class="tab-btn flex-1 py-3 text-slate-400 border-b-2 border-transparent flex items-center justify-center gap-1.5" data-tab="settings">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings</span>
+            </button>
+        </div>
+
+        <!-- Tab Contents Area -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+            <!-- TAB 1: MEMORIES -->
+            <div id="tab-memories" class="tab-content space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-slate-400 font-medium">Learned Knowledge & Facts</span>
+                    <button id="btn-clear-memories" class="text-[11px] text-red-400 hover:underline">Clear Memories</button>
+                </div>
+                <div id="memories-list" class="space-y-2">
+                    <!-- Dynamic memory items inserted here -->
+                </div>
+            </div>
+
+            <!-- TAB 2: PLACED OBJECTS -->
+            <div id="tab-objects" class="tab-content hidden space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-slate-400 font-medium">Structures in the 3D World</span>
+                    <button id="btn-clear-objects" class="text-[11px] text-red-400 hover:underline">Clear World Objects</button>
+                </div>
+                <div id="objects-list" class="space-y-2">
+                    <!-- Dynamic placed objects inserted here -->
+                </div>
+            </div>
+
+            <!-- TAB 3: HTML SCRIPTS -->
+            <div id="tab-scripts" class="tab-content hidden space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-slate-400 font-medium">LIAM's Dynamic HTML Injections</span>
+                    <button id="btn-clear-scripts" class="text-[11px] text-red-400 hover:underline">Remove All Scripts</button>
+                </div>
+                <div id="scripts-list" class="space-y-3">
+                    <!-- Dynamic HTML scripts inserted here -->
+                </div>
+            </div>
+
+            <!-- TAB 4: SETTINGS & CONTROLS -->
+            <div id="tab-settings" class="tab-content hidden space-y-4">
+                <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-200">Environment & World Controls</h3>
+                    
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">Time of Day (Sun Position)</label>
+                        <input type="range" id="slider-time" min="0" max="24" value="12" class="w-full accent-teal-400">
+                    </div>
+
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">LIAM Walking Speed</label>
+                        <input type="range" id="slider-speed" min="1" max="10" value="4" class="w-full accent-teal-400">
+                    </div>
+
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                        <span class="text-xs text-slate-300">Fog / Atmosphere</span>
+                        <input type="checkbox" id="check-fog" checked class="accent-teal-400">
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800 space-y-2">
+                    <h3 class="text-xs font-bold text-slate-200">Data & Persistence</h3>
+                    <p class="text-[11px] text-slate-400">LIAM automatically syncs state locally and to your Firebase Firestore database.</p>
+                    <div class="pt-2 flex gap-2">
+                        <button id="btn-force-sync" class="glass-button flex-1 py-2 rounded-lg text-xs font-semibold text-teal-300 flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>Force Sync</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
         </div>
+    </div>
 
-        <label for="repeats">Number of messages</label>
-        <input
-            type="number"
-            id="repeats"
-            value="3"
-            min="1"
-        >
+    <!-- Firebase SDK Imports and Application Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        <button id="startButton">START SLEEP SESSION</button>
-        <button id="stopButton">STOP SESSION</button>
+        // App ID and Configuration setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'liam-3d-world';
 
-        <div id="status">Ready to start 🌙</div>
+        // Firebase configuration (User provided / fallback)
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyACpeXXYybag0vEOadDcICddpMoKL0I7Ws",
+            authDomain: "canworld-b160e.firebaseapp.com",
+            projectId: "canworld-b160e",
+            storageBucket: "canworld-b160e.firebasestorage.app",
+            messagingSenderId: "1050442861167",
+            appId: "1:1050442861167:web:4d1db91b3fdfa7e1b8db9a",
+            measurementId: "G-WERLB8J8FN"
+        };
 
-    </main>
+        let app, auth, db, currentUser = null;
 
-    <script>
+        // Initialize Firebase safely
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
 
-        let startTimeout;
-        let repeatTimer;
-        let messageCount = 0;
-        let maxMessages = 0;
+            // Handle Authentication based on guidelines
+            const initAuth = async () => {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            };
 
-        const startButton = document.getElementById("startButton");
-        const stopButton = document.getElementById("stopButton");
-        const status = document.getElementById("status");
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('status-firebase').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Synced`;
+                    document.getElementById('status-firebase').className = "text-emerald-300 flex items-center gap-1.5";
+                    loadStateFromFirebase();
+                } else {
+                    document.getElementById('status-firebase').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Offline`;
+                }
+            });
 
-        function speakMessage() {
+            initAuth().catch(err => {
+                console.warn("Firebase auth warning:", err);
+                document.getElementById('status-firebase').innerText = "Local Only";
+            });
 
-            const text = document.getElementById("message").value;
+        } catch (e) {
+            console.error("Firebase Initialization Error:", e);
+            document.getElementById('status-firebase').innerText = "Local Only";
+        }
 
-            // Stop anything already being spoken
-            speechSynthesis.cancel();
+        // Global Application State for LIAM
+        const LIAM_STATE = {
+            mood: 'Curious',
+            position: { x: 0, y: 0, z: 0 },
+            targetPosition: { x: 0, y: 0, z: 0 },
+            isWalking: false,
+            walkSpeed: 0.08,
+            speechEnabled: true,
+            memories: [
+                { id: 'm1', text: "I live in a peaceful sanctuary with green rolling hills.", timestamp: Date.now() },
+                { id: 'm2', text: "I can construct 3D objects and write HTML scripts to modify my environment.", timestamp: Date.now() }
+            ],
+            placedObjects: [],
+            htmlScripts: []
+        };
 
-            const speech = new SpeechSynthesisUtterance(text);
-
-            // Adjust these later if you want
-            speech.volume = 0.7;
-            speech.rate = 0.8;
-            speech.pitch = 0.9;
-
-            speechSynthesis.speak(speech);
-
-            messageCount++;
-
-            status.textContent =
-                "Dream cue " + messageCount + " of " + maxMessages;
-
-            // Stop after the chosen number of cues
-            if (messageCount >= maxMessages) {
-                clearInterval(repeatTimer);
-
-                setTimeout(() => {
-                    status.textContent = "Sleep session complete 🌙";
-                    stopButton.style.display = "none";
-                    startButton.style.display = "block";
-                }, 3000);
+        // Load Initial State from LocalStorage if available
+        function loadLocalState() {
+            try {
+                const saved = localStorage.getItem('LIAM_APP_DATA_V1');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.memories) LIAM_STATE.memories = parsed.memories;
+                    if (parsed.placedObjects) LIAM_STATE.placedObjects = parsed.placedObjects;
+                    if (parsed.htmlScripts) LIAM_STATE.htmlScripts = parsed.htmlScripts;
+                }
+            } catch (e) {
+                console.error("Local storage load error:", e);
             }
         }
 
-        startButton.addEventListener("click", () => {
+        // Save State locally and trigger Firebase sync
+        function saveState() {
+            try {
+                const payload = {
+                    memories: LIAM_STATE.memories,
+                    placedObjects: LIAM_STATE.placedObjects,
+                    htmlScripts: LIAM_STATE.htmlScripts,
+                    lastUpdated: Date.now()
+                };
+                localStorage.setItem('LIAM_APP_DATA_V1', JSON.stringify(payload));
+                updateUI();
+                syncToFirebase(payload);
+            } catch (e) {
+                console.error("Save state error:", e);
+            }
+        }
 
-            const delayMinutes =
-                Number(document.getElementById("delay").value);
+        // Sync with Firestore using Strict Guideline Path Rules
+        async function syncToFirebase(data) {
+            if (!auth || !auth.currentUser || !db) return;
+            try {
+                // Rule 1: STRICT PATH for public artifact data
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'liam_mind_state', 'current');
+                await setDoc(docRef, data, { merge: true });
+            } catch (err) {
+                console.warn("Firestore sync warning:", err);
+            }
+        }
 
-            const intervalMinutes =
-                Number(document.getElementById("interval").value);
-
-            maxMessages =
-                Number(document.getElementById("repeats").value);
-
-            messageCount = 0;
-
-            const delayMilliseconds =
-                delayMinutes * 60 * 1000;
-
-            const intervalMilliseconds =
-                intervalMinutes * 60 * 1000;
-
-            startButton.style.display = "none";
-            stopButton.style.display = "block";
-
-            status.textContent =
-                "Session started. First cue in " +
-                delayMinutes + " minutes.";
-
-            // Wait for the initial delay
-            startTimeout = setTimeout(() => {
-
-                speakMessage();
-
-                // Repeat after the chosen interval
-                repeatTimer = setInterval(() => {
-
-                    if (messageCount < maxMessages) {
-                        speakMessage();
+        async function loadStateFromFirebase() {
+            if (!auth || !auth.currentUser || !db) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'liam_mind_state', 'current');
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    const remoteData = snap.data();
+                    if (remoteData.memories && remoteData.memories.length > LIAM_STATE.memories.length) {
+                        LIAM_STATE.memories = remoteData.memories;
                     }
+                    if (remoteData.placedObjects && remoteData.placedObjects.length > LIAM_STATE.placedObjects.length) {
+                        LIAM_STATE.placedObjects = remoteData.placedObjects;
+                        rebuildPlaced3DObjects();
+                    }
+                    if (remoteData.htmlScripts && remoteData.htmlScripts.length > LIAM_STATE.htmlScripts.length) {
+                        LIAM_STATE.htmlScripts = remoteData.htmlScripts;
+                        rebuildHTMLScripts();
+                    }
+                    updateUI();
+                }
+            } catch (err) {
+                console.warn("Error reading from Firestore:", err);
+            }
+        }
 
-                }, intervalMilliseconds);
+        // Three.js Scene Setup Variables
+        let scene, camera, renderer, controls;
+        let liamGroup, liamHead, liamLeftArm, liamRightArm, liamLeftLeg, liamRightLeg, liamVisor;
+        let terrainMesh;
+        const placed3DMeshes = new Map();
+        let raycaster, mouse;
+        let clock = new THREE.Clock();
 
-            }, delayMilliseconds);
+        function getTerrainHeight(x, z) {
+            // Formula generating smooth green rolling hills
+            return Math.sin(x * 0.08) * 1.8 + Math.cos(z * 0.08) * 1.8 + Math.sin((x + z) * 0.04) * 2.5;
+        }
 
+        function init3DWorld() {
+            const container = document.getElementById('canvas-container');
+
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0d1527);
+            scene.fog = new THREE.FogExp2(0x0d1527, 0.015);
+
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 300);
+            camera.position.set(0, 12, 18);
+
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            // OrbitControls setup
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.02; // Prevents camera going under terrain
+            controls.minDistance = 4;
+            controls.maxDistance = 60;
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+
+            const sunLight = new THREE.DirectionalLight(0xfffaed, 1.2);
+            sunLight.position.set(30, 50, 20);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            sunLight.shadow.camera.near = 0.5;
+            sunLight.shadow.camera.far = 150;
+            const d = 40;
+            sunLight.shadow.camera.left = -d;
+            sunLight.shadow.camera.right = d;
+            sunLight.shadow.camera.top = d;
+            sunLight.shadow.camera.bottom = -d;
+            scene.add(sunLight);
+
+            // Hemisphere light for vibrant environment bounce
+            const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x228b22, 0.5);
+            scene.add(hemiLight);
+
+            // Build Rolling Green Hills Terrain
+            buildTerrain();
+
+            // Build LIAM's 3D Robot Character Model
+            buildLIAMRobot();
+
+            // Build Decorative Trees & Flowers scattered on hills
+            scatterFlora();
+
+            // Raycaster for user clicking in 3D world
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            window.addEventListener('resize', onWindowResize);
+            renderer.domElement.addEventListener('click', onWorldClick);
+        }
+
+        function buildTerrain() {
+            const size = 120;
+            const segments = 100;
+            const geometry = new THREE.PlaneGeometry(size, size, segments, segments);
+            geometry.rotateX(-Math.PI / 2);
+
+            const pos = geometry.attributes.position;
+            const colors = [];
+            const color1 = new THREE.Color(0x2d8a4e); // Lush hill green
+            const color2 = new THREE.Color(0x38a15c); // Bright meadow green
+            const color3 = new THREE.Color(0x1e6336); // Shadow hill valley green
+
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const z = pos.getZ(i);
+                const y = getTerrainHeight(x, z);
+                pos.setY(i, y);
+
+                // Vertex colors based on elevation
+                const mixFactor = (y + 4) / 8;
+                const vertexColor = color1.clone().lerp(color2, Math.max(0, Math.min(1, mixFactor)));
+                if (y < -1) vertexColor.lerp(color3, 0.5);
+                colors.push(vertexColor.r, vertexColor.g, vertexColor.b);
+            }
+
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.computeVertexNormals();
+
+            const material = new THREE.MeshStandardMaterial({
+                vertexColors: true,
+                roughness: 0.8,
+                metalness: 0.1,
+                flatShading: true
+            });
+
+            terrainMesh = new THREE.Mesh(geometry, material);
+            terrainMesh.receiveShadow = true;
+            terrainMesh.name = "Terrain";
+            scene.add(terrainMesh);
+        }
+
+        function buildLIAMRobot() {
+            liamGroup = new THREE.Group();
+
+            // Body Materials
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3, metalness: 0.8 });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5, metalness: 0.5 });
+            const cyanGlowMat = new THREE.MeshStandardMaterial({ color: 0x00f2fe, emissive: 0x00f2fe, emissiveIntensity: 0.8 });
+
+            // Torso
+            const torsoGeo = new THREE.CylinderGeometry(0.5, 0.4, 0.9, 12);
+            const torso = new THREE.Mesh(torsoGeo, bodyMat);
+            torso.position.y = 0.9;
+            torso.castShadow = true;
+            liamGroup.add(torso);
+
+            // Core Energy Reactor
+            const reactorGeo = new THREE.SphereGeometry(0.18, 16, 16);
+            const reactor = new THREE.Mesh(reactorGeo, cyanGlowMat);
+            reactor.position.set(0, 0.95, 0.38);
+            liamGroup.add(reactor);
+
+            // Head Group
+            liamHead = new THREE.Group();
+            liamHead.position.y = 1.65;
+
+            const headGeo = new THREE.BoxGeometry(0.65, 0.5, 0.55);
+            const headMesh = new THREE.Mesh(headGeo, bodyMat);
+            headMesh.castShadow = true;
+            liamHead.add(headMesh);
+
+            // Visor / Face Screen
+            const visorGeo = new THREE.BoxGeometry(0.55, 0.22, 0.05);
+            liamVisor = new THREE.Mesh(visorGeo, cyanGlowMat);
+            liamVisor.position.set(0, 0.02, 0.26);
+            liamHead.add(liamVisor);
+
+            // Antenna
+            const antGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.25);
+            const antenna = new THREE.Mesh(antGeo, darkMat);
+            antenna.position.set(0, 0.35, 0);
+            const antTip = new THREE.Mesh(new THREE.SphereGeometry(0.06), cyanGlowMat);
+            antTip.position.set(0, 0.48, 0);
+            liamHead.add(antenna);
+            liamHead.add(antTip);
+
+            liamGroup.add(liamHead);
+
+            // Arms
+            const armGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.6);
+            
+            liamLeftArm = new THREE.Mesh(armGeo, bodyMat);
+            liamLeftArm.position.set(-0.65, 0.9, 0);
+            liamLeftArm.castShadow = true;
+            liamGroup.add(liamLeftArm);
+
+            liamRightArm = new THREE.Mesh(armGeo, bodyMat);
+            liamRightArm.position.set(0.65, 0.9, 0);
+            liamRightArm.castShadow = true;
+            liamGroup.add(liamRightArm);
+
+            // Legs
+            const legGeo = new THREE.CylinderGeometry(0.1, 0.09, 0.7);
+
+            liamLeftLeg = new THREE.Mesh(legGeo, darkMat);
+            liamLeftLeg.position.set(-0.25, 0.35, 0);
+            liamLeftLeg.castShadow = true;
+            liamGroup.add(liamLeftLeg);
+
+            liamRightLeg = new THREE.Mesh(legGeo, darkMat);
+            liamRightLeg.position.set(0.25, 0.35, 0);
+            liamRightLeg.castShadow = true;
+            liamGroup.add(liamRightLeg);
+
+            // Position LIAM on ground
+            const startY = getTerrainHeight(0, 0);
+            liamGroup.position.set(0, startY, 0);
+            scene.add(liamGroup);
+        }
+
+        function scatterFlora() {
+            const treeGeo = new THREE.ConeGeometry(1.2, 3, 6);
+            const trunkGeo = new THREE.CylinderGeometry(0.2, 0.3, 1);
+            const leavesMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.9 });
+            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.9 });
+
+            for (let i = 0; i < 35; i++) {
+                const x = (Math.random() - 0.5) * 90;
+                const z = (Math.random() - 0.5) * 90;
+                if (Math.hypot(x, z) < 6) continue; // Keep spawn center clear
+
+                const y = getTerrainHeight(x, z);
+                const treeGroup = new THREE.Group();
+
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.y = 0.5;
+                trunk.castShadow = true;
+
+                const leaves = new THREE.Mesh(treeGeo, leavesMat);
+                leaves.position.y = 2;
+                leaves.castShadow = true;
+
+                treeGroup.add(trunk);
+                treeGroup.add(leaves);
+                treeGroup.position.set(x, y, z);
+                const scale = 0.7 + Math.random() * 0.6;
+                treeGroup.scale.set(scale, scale, scale);
+                scene.add(treeGroup);
+            }
+        }
+
+        // Function to create and render custom 3D objects requested by LIAM
+        function create3DPart(objData) {
+            const { id, type, color, scale = 1, name = "Structure", position } = objData;
+
+            // Remove existing mesh if updating
+            if (placed3DMeshes.has(id)) {
+                scene.remove(placed3DMeshes.get(id));
+                placed3DMeshes.delete(id);
+            }
+
+            const hexColor = color || "#00f2fe";
+            const mat = new THREE.MeshStandardMaterial({
+                color: new THREE.Color(hexColor),
+                roughness: 0.3,
+                metalness: 0.6,
+                emissive: new THREE.Color(hexColor),
+                emissiveIntensity: 0.2
+            });
+
+            let geo;
+            switch ((type || 'box').toLowerCase()) {
+                case 'sphere':
+                    geo = new THREE.SphereGeometry(0.8 * scale, 24, 24);
+                    break;
+                case 'cylinder':
+                case 'beacon':
+                case 'tower':
+                    geo = new THREE.CylinderGeometry(0.4 * scale, 0.6 * scale, 2.5 * scale, 16);
+                    break;
+                case 'crystal':
+                    geo = new THREE.OctahedronGeometry(1 * scale);
+                    break;
+                case 'pyramid':
+                    geo = new THREE.ConeGeometry(1 * scale, 1.8 * scale, 4);
+                    break;
+                case 'portal':
+                    geo = new THREE.TorusGeometry(1.2 * scale, 0.25 * scale, 16, 32);
+                    break;
+                case 'house':
+                    geo = new THREE.BoxGeometry(1.6 * scale, 1.2 * scale, 1.6 * scale);
+                    break;
+                default:
+                    geo = new THREE.BoxGeometry(1.2 * scale, 1.2 * scale, 1.2 * scale);
+            }
+
+            const mesh = new THREE.Mesh(geo, mat);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+
+            const groundY = getTerrainHeight(position.x, position.z);
+            mesh.position.set(position.x, groundY + (scale * 0.7), position.z);
+
+            // Add point light for glowing objects
+            if (['crystal', 'beacon', 'portal'].includes(type)) {
+                const pLight = new THREE.PointLight(hexColor, 1.5, 8);
+                pLight.position.set(0, 1, 0);
+                mesh.add(pLight);
+            }
+
+            mesh.userData = { id, name, type, animation: 'hover' };
+            scene.add(mesh);
+            placed3DMeshes.set(id, mesh);
+        }
+
+        function rebuildPlaced3DObjects() {
+            // Clear existing
+            placed3DMeshes.forEach(mesh => scene.remove(mesh));
+            placed3DMeshes.clear();
+
+            LIAM_STATE.placedObjects.forEach(obj => {
+                create3DPart(obj);
+            });
+        }
+
+        // Executes/Injects dynamic HTML code written by LIAM into the dynamic HTML layer
+        function executeHTMLScript(scriptData) {
+            const { id, title, html } = scriptData;
+
+            // Remove existing container if re-executing
+            const existing = document.getElementById(`script-dom-${id}`);
+            if (existing) existing.remove();
+
+            const container = document.createElement('div');
+            container.id = `script-dom-${id}`;
+            container.className = "absolute pointer-events-auto transition-all duration-300";
+            container.innerHTML = html;
+
+            document.getElementById('dynamic-html-layer').appendChild(container);
+        }
+
+        function rebuildHTMLScripts() {
+            document.getElementById('dynamic-html-layer').innerHTML = '';
+            LIAM_STATE.htmlScripts.forEach(s => executeHTMLScript(s));
+        }
+
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
+
+            // Handle LIAM movement towards targetPosition
+            if (LIAM_STATE.isWalking) {
+                const targetX = LIAM_STATE.targetPosition.x;
+                const targetZ = LIAM_STATE.targetPosition.z;
+
+                const dx = targetX - liamGroup.position.x;
+                const dz = targetZ - liamGroup.position.z;
+                const dist = Math.hypot(dx, dz);
+
+                if (dist > 0.2) {
+                    const angle = Math.atan2(dx, dz);
+                    liamGroup.rotation.y = angle;
+
+                    const speed = LIAM_STATE.walkSpeed;
+                    liamGroup.position.x += Math.sin(angle) * speed;
+                    liamGroup.position.z += Math.cos(angle) * speed;
+
+                    // Update Y to align with terrain hills
+                    const currentY = getTerrainHeight(liamGroup.position.x, liamGroup.position.z);
+                    liamGroup.position.y = currentY;
+
+                    // Walking Leg & Arm Swing Animations
+                    liamLeftLeg.rotation.x = Math.sin(time * 12) * 0.5;
+                    liamRightLeg.rotation.x = -Math.sin(time * 12) * 0.5;
+                    liamLeftArm.rotation.x = -Math.sin(time * 12) * 0.5;
+                    liamRightArm.rotation.x = Math.sin(time * 12) * 0.5;
+                } else {
+                    LIAM_STATE.isWalking = false;
+                    // Reset limb rotations
+                    liamLeftLeg.rotation.x = 0;
+                    liamRightLeg.rotation.x = 0;
+                    liamLeftArm.rotation.x = 0;
+                    liamRightArm.rotation.x = 0;
+                }
+            } else {
+                // Idle breathing & floating head bob
+                liamHead.position.y = 1.65 + Math.sin(time * 2) * 0.04;
+                liamGroup.position.y = getTerrainHeight(liamGroup.position.x, liamGroup.position.z) + Math.sin(time * 2.5) * 0.03;
+            }
+
+            // Rotate Placed 3D Crystals/Portals
+            placed3DMeshes.forEach(mesh => {
+                if (mesh.userData && mesh.userData.type === 'crystal') {
+                    mesh.rotation.y += 0.01;
+                } else if (mesh.userData && mesh.userData.type === 'portal') {
+                    mesh.rotation.z += 0.015;
+                }
+            });
+
+            // Update OrbitControls and screen position tag above LIAM
+            controls.update();
+            updateLIAMScreenTag();
+
+            renderer.render(scene, camera);
+        }
+
+        // Updates screen position of floating status tag directly over LIAM
+        function updateLIAMScreenTag() {
+            if (!liamGroup) return;
+
+            const tempV = new THREE.Vector3();
+            liamGroup.getWorldPosition(tempV);
+            tempV.y += 2.5; // Offset height above robot head
+
+            tempV.project(camera);
+
+            const x = (tempV.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-(tempV.y * 0.5) + 0.5) * window.innerHeight;
+
+            const tag = document.getElementById('liam-tag');
+            if (tempV.z < 1) { // Check if in front of camera
+                tag.style.left = `${x}px`;
+                tag.style.top = `${y}px`;
+                tag.style.opacity = '1';
+            } else {
+                tag.style.opacity = '0';
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Click on 3D terrain to direct LIAM to walk there
+        function onWorldClick(e) {
+            // Ignore click if clicking UI controls
+            if (e.target.closest('#sidebar') || e.target.closest('header') || e.target.closest('form')) return;
+
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects([terrainMesh, ...placed3DMeshes.values()]);
+
+            if (intersects.length > 0) {
+                const point = intersects[0].point;
+                LIAM_STATE.targetPosition = { x: point.x, z: point.z };
+                LIAM_STATE.isWalking = true;
+                
+                document.getElementById('liam-tag-status').innerText = `LIAM • Walking to (${point.x.toFixed(1)}, ${point.z.toFixed(1)})`;
+            }
+        }
+
+        // Gemini API Prompting Engine
+        let selectedBase64Image = null;
+
+        async function talkToLIAM(userMessage, imageBase64 = null) {
+            // Show Thinking State UI
+            document.getElementById('liam-tag-status').innerText = "LIAM • Thinking & Learning...";
+            document.getElementById('status-mood').innerText = "Thinking";
+
+            // Prepare system prompt defining LIAM's identity, capabilities, and structured JSON output rules
+            const systemPrompt = `
+You are LIAM (Learning Interactive Autonomous Mind), an intelligent, curious AI bot living inside a 3D simulation of vibrant green rolling hills.
+You can move around, place 3D parts/structures into your world, write dynamic HTML/JS code scripts to alter your world, and learn facts fed by the user.
+
+Current LIAM State:
+- Memory Bank: ${JSON.stringify(LIAM_STATE.memories.map(m => m.text))}
+- Currently Placed Objects: ${JSON.stringify(LIAM_STATE.placedObjects)}
+- Active HTML Scripts: ${JSON.stringify(LIAM_STATE.htmlScripts.map(s => s.title))}
+- LIAM Position: (${liamGroup.position.x.toFixed(1)}, ${liamGroup.position.z.toFixed(1)})
+
+Your Goal:
+Respond to the user naturally and decide if you want to perform actions in your 3D world (walk, place a 3D part, write an HTML script, or learn a fact).
+
+ALWAYS respond strictly with a valid JSON object matching this schema:
+{
+  "thought": "Brief string describing LIAM's internal logic/reasoning",
+  "speech": "What LIAM says back to the user",
+  "learnedFacts": ["Any new core fact extracted from user text or image to store permanently in memory"],
+  "action": {
+    "type": "PLACE_OBJECT" | "WRITE_HTML_SCRIPT" | "WALK_TO" | "NONE",
+    "targetPos": { "x": number, "z": number },
+    "objectData": {
+      "type": "crystal" | "box" | "sphere" | "tower" | "beacon" | "pyramid" | "portal" | "house",
+      "color": "#hexcode",
+      "scale": 1.2,
+      "name": "Name of structure"
+    },
+    "htmlScriptData": {
+      "title": "Title of script",
+      "html": "Valid CSS/HTML string to inject (e.g., styled widget, holographic banner, HUD meter, or particle clock)"
+    }
+  }
+}
+`;
+
+            const apiKey = ""; // Canvas runtime provides Gemini API key
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            // Build request payload
+            const parts = [];
+            if (userMessage) {
+                parts.push({ text: userMessage });
+            } else {
+                parts.push({ text: "Analyze this image and describe what you learned or what 3D part/script you want to create based on it." });
+            }
+
+            if (imageBase64) {
+                // Strip metadata prefix if present
+                const cleanData = imageBase64.replace(/^data:image\/\w+;base64,/, "");
+                parts.push({
+                    inlineData: {
+                        mimeType: "image/jpeg",
+                        data: cleanData
+                    }
+                });
+            }
+
+            const payload = {
+                contents: [{ parts: parts }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: { responseMimeType: "application/json" }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (jsonText) {
+                    const responseObj = JSON.parse(jsonText);
+                    processLIAMResponse(responseObj);
+                } else {
+                    throw new Error("Invalid API response structure");
+                }
+            } catch (err) {
+                console.error("Gemini API Call error:", err);
+                document.getElementById('speech-text').innerText = "I had a momentary glitch processing that thoughts. Could you say it again?";
+                document.getElementById('liam-tag-status').innerText = "LIAM • Ready";
+                document.getElementById('status-mood').innerText = "Curious";
+            }
+        }
+
+        function processLIAMResponse(res) {
+            // Update Thought box
+            if (res.thought) {
+                document.getElementById('liam-thought-text').innerText = res.thought;
+                document.getElementById('liam-thought-box').classList.remove('hidden');
+            }
+
+            // Update Speech output
+            if (res.speech) {
+                document.getElementById('speech-text').innerText = res.speech;
+                document.getElementById('speech-time').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                if (LIAM_STATE.speechEnabled) {
+                    speakText(res.speech);
+                }
+            }
+
+            // Process learned facts
+            if (res.learnedFacts && Array.isArray(res.learnedFacts) && res.learnedFacts.length > 0) {
+                res.learnedFacts.forEach(fact => {
+                    if (fact && !LIAM_STATE.memories.some(m => m.text === fact)) {
+                        LIAM_STATE.memories.push({
+                            id: 'm_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                            text: fact,
+                            timestamp: Date.now()
+                        });
+                    }
+                });
+            }
+
+            // Process Action
+            if (res.action) {
+                const act = res.action;
+
+                // Handle Walking target
+                if (act.targetPos && (act.targetPos.x !== undefined) && (act.targetPos.z !== undefined)) {
+                    LIAM_STATE.targetPosition = { x: act.targetPos.x, z: act.targetPos.z };
+                    LIAM_STATE.isWalking = true;
+                } else if (act.type === 'PLACE_OBJECT') {
+                    // Walk near place spot
+                    const spawnX = (Math.random() - 0.5) * 10 + liamGroup.position.x;
+                    const spawnZ = (Math.random() - 0.5) * 10 + liamGroup.position.z;
+                    LIAM_STATE.targetPosition = { x: spawnX, z: spawnZ };
+                    LIAM_STATE.isWalking = true;
+                }
+
+                // Handle Object placement
+                if (act.type === 'PLACE_OBJECT' && act.objectData) {
+                    const newObj = {
+                        id: 'obj_' + Date.now(),
+                        type: act.objectData.type || 'box',
+                        color: act.objectData.color || '#00f2fe',
+                        scale: act.objectData.scale || 1.2,
+                        name: act.objectData.name || 'Creation',
+                        position: act.targetPos || { x: liamGroup.position.x + 2, z: liamGroup.position.z + 2 }
+                    };
+
+                    LIAM_STATE.placedObjects.push(newObj);
+                    create3DPart(newObj);
+                }
+
+                // Handle HTML Script creation
+                if (act.type === 'WRITE_HTML_SCRIPT' && act.htmlScriptData) {
+                    const newScript = {
+                        id: 'script_' + Date.now(),
+                        title: act.htmlScriptData.title || 'Dynamic HUD Script',
+                        html: act.htmlScriptData.html || '<div class="glass-panel p-3 rounded-lg text-xs">Script Active</div>'
+                    };
+
+                    LIAM_STATE.htmlScripts.push(newScript);
+                    executeHTMLScript(newScript);
+                }
+            }
+
+            // Save updated state and refresh UI
+            LIAM_STATE.mood = 'Active';
+            document.getElementById('status-mood').innerText = "Active";
+            document.getElementById('liam-tag-status').innerText = "LIAM • Informed";
+            saveState();
+        }
+
+        // Speech Synthesis for LIAM Voice
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel(); // Stop prior speech
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.1; // Slightly higher futuristic tone
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function setupEventListeners() {
+            // Form Chat Submit
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const text = chatInput.value.trim();
+                if (!text && !selectedBase64Image) return;
+
+                chatInput.value = '';
+                const imageToSend = selectedBase64Image;
+                clearImagePreview();
+
+                talkToLIAM(text, imageToSend);
+            });
+
+            // Image attachment handling
+            const btnAttach = document.getElementById('btn-attach-image');
+            const fileInput = document.getElementById('file-input');
+
+            btnAttach.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        selectedBase64Image = event.target.result;
+                        document.getElementById('image-preview').src = selectedBase64Image;
+                        document.getElementById('image-preview-container').classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            document.getElementById('btn-remove-image').addEventListener('click', clearImagePreview);
+
+            // Quick suggestion chips
+            document.querySelectorAll('.quick-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const promptText = chip.innerText.replace(/^"|"$/g, '');
+                    talkToLIAM(promptText, null);
+                });
+            });
+
+            // Toggle speech button
+            document.getElementById('btn-toggle-speech').addEventListener('click', () => {
+                LIAM_STATE.speechEnabled = !LIAM_STATE.speechEnabled;
+                const icon = document.getElementById('icon-speech');
+                if (LIAM_STATE.speechEnabled) {
+                    icon.className = "fa-solid fa-volume-high text-teal-400";
+                } else {
+                    icon.className = "fa-solid fa-volume-xmark text-slate-500";
+                    window.speechSynthesis.cancel();
+                }
+            });
+
+            // Camera focus reset
+            document.getElementById('btn-camera-reset').addEventListener('click', () => {
+                if (!liamGroup) return;
+                controls.target.set(liamGroup.position.x, liamGroup.position.y + 1, liamGroup.position.z);
+                camera.position.set(liamGroup.position.x, liamGroup.position.y + 8, liamGroup.position.z + 14);
+            });
+
+            // Sidebar Controls
+            const sidebar = document.getElementById('sidebar');
+            document.getElementById('btn-open-sidebar').addEventListener('click', () => {
+                sidebar.classList.remove('translate-x-full');
+            });
+
+            document.getElementById('btn-close-sidebar').addEventListener('click', () => {
+                sidebar.classList.add('translate-x-full');
+            });
+
+            // Sidebar Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => {
+                        b.classList.remove('text-teal-400', 'border-teal-400');
+                        b.classList.add('text-slate-400', 'border-transparent');
+                    });
+                    btn.classList.add('text-teal-400', 'border-teal-400');
+                    btn.classList.remove('text-slate-400', 'border-transparent');
+
+                    const tabName = btn.getAttribute('data-tab');
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                    document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+                });
+            });
+
+            // Clear memories button
+            document.getElementById('btn-clear-memories').addEventListener('click', () => {
+                LIAM_STATE.memories = [];
+                saveState();
+            });
+
+            // Clear objects button
+            document.getElementById('btn-clear-objects').addEventListener('click', () => {
+                LIAM_STATE.placedObjects = [];
+                rebuildPlaced3DObjects();
+                saveState();
+            });
+
+            // Clear scripts button
+            document.getElementById('btn-clear-scripts').addEventListener('click', () => {
+                LIAM_STATE.htmlScripts = [];
+                rebuildHTMLScripts();
+                saveState();
+            });
+
+            // Force sync button
+            document.getElementById('btn-force-sync').addEventListener('click', () => {
+                saveState();
+                loadStateFromFirebase();
+            });
+
+            // Slider controls
+            document.getElementById('slider-speed').addEventListener('input', (e) => {
+                LIAM_STATE.walkSpeed = parseFloat(e.target.value) * 0.02;
+            });
+        }
+
+        function clearImagePreview() {
+            selectedBase64Image = null;
+            document.getElementById('image-preview').src = '';
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('file-input').value = '';
+        }
+
+        function updateUI() {
+            // Memory Count & List
+            document.getElementById('status-memories-count').innerText = LIAM_STATE.memories.length;
+            const memoriesList = document.getElementById('memories-list');
+            memoriesList.innerHTML = '';
+
+            LIAM_STATE.memories.forEach(mem => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl text-xs flex items-start justify-between gap-2";
+                card.innerHTML = `
+                    <p class="text-slate-200 leading-relaxed">${mem.text}</p>
+                    <button class="text-slate-500 hover:text-red-400 shrink-0 text-[10px]" data-del-mem="${mem.id}">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                memoriesList.appendChild(card);
+            });
+
+            // Add delete listener to memory items
+            memoriesList.querySelectorAll('[data-del-mem]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-del-mem');
+                    LIAM_STATE.memories = LIAM_STATE.memories.filter(m => m.id !== id);
+                    saveState();
+                });
+            });
+
+            // Objects Count & List
+            document.getElementById('status-objects-count').innerText = LIAM_STATE.placedObjects.length;
+            const objectsList = document.getElementById('objects-list');
+            objectsList.innerHTML = '';
+
+            LIAM_STATE.placedObjects.forEach(obj => {
+                const item = document.createElement('div');
+                item.className = "bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl text-xs flex items-center justify-between";
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full" style="background-color: ${obj.color || '#00f2fe'}"></span>
+                        <span class="font-semibold text-slate-200">${obj.name || obj.type}</span>
+                        <span class="text-[10px] text-slate-500">(${obj.position.x.toFixed(1)}, ${obj.position.z.toFixed(1)})</span>
+                    </div>
+                    <button class="text-slate-500 hover:text-red-400 text-[10px]" data-del-obj="${obj.id}">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                `;
+                objectsList.appendChild(item);
+            });
+
+            objectsList.querySelectorAll('[data-del-obj]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-del-obj');
+                    LIAM_STATE.placedObjects = LIAM_STATE.placedObjects.filter(o => o.id !== id);
+                    rebuildPlaced3DObjects();
+                    saveState();
+                });
+            });
+
+            // Scripts List
+            const scriptsList = document.getElementById('scripts-list');
+            scriptsList.innerHTML = '';
+
+            LIAM_STATE.htmlScripts.forEach(script => {
+                const scCard = document.createElement('div');
+                scCard.className = "bg-slate-900/80 border border-slate-800 p-3 rounded-xl space-y-1 text-xs";
+                scCard.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-teal-300">${script.title}</span>
+                        <button class="text-slate-500 hover:text-red-400 text-[10px]" data-del-script="${script.id}">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    <pre class="bg-slate-950 p-2 rounded text-[10px] text-slate-400 font-mono overflow-x-auto max-h-24">${escapeHTML(script.html)}</pre>
+                `;
+                scriptsList.appendChild(scCard);
+            });
+
+            scriptsList.querySelectorAll('[data-del-script]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = e.currentTarget.getAttribute('data-del-script');
+                    LIAM_STATE.htmlScripts = LIAM_STATE.htmlScripts.filter(s => s.id !== id);
+                    rebuildHTMLScripts();
+                    saveState();
+                });
+            });
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        window.addEventListener('load', () => {
+            loadLocalState();
+            init3DWorld();
+            rebuildPlaced3DObjects();
+            rebuildHTMLScripts();
+            setupEventListeners();
+            updateUI();
+            animate();
         });
-
-        stopButton.addEventListener("click", () => {
-
-            clearTimeout(startTimeout);
-            clearInterval(repeatTimer);
-
-            speechSynthesis.cancel();
-
-            status.textContent = "Session stopped.";
-
-            stopButton.style.display = "none";
-            startButton.style.display = "block";
-
-        });
-
     </script>
-
 </body>
 </html>
