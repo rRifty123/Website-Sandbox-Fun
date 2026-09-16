@@ -2,287 +2,993 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Virtual Fruit Fly Brain</title>
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0,
+      maximum-scale=1.0, user-scalable=no">
+
+<title>AI World</title>
 
 <style>
 * {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-body {
+html, body {
     margin: 0;
-    background: #101216;
-    color: #eee;
-    font-family: Arial, sans-serif;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+    background: #080b10;
+    color: white;
+    font-family: Arial, sans-serif;
 }
 
-#topbar {
-    height: 55px;
-    background: #191c22;
-    display: flex;
-    align-items: center;
-    padding: 0 18px;
-    gap: 10px;
-    border-bottom: 1px solid #30343c;
+/* =========================================================
+   WORLD
+========================================================= */
+
+#world {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    perspective: 850px;
+
+    background:
+        radial-gradient(
+            circle at 50% 40%,
+            #26364b,
+            #101722 60%,
+            #080b10
+        );
 }
 
-#topbar h1 {
+#camera {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+
+    width: 0;
+    height: 0;
+
+    transform-style: preserve-3d;
+
+    transform:
+        translate(-50%, -50%)
+        rotateX(55deg);
+}
+
+#room {
+    position: absolute;
+
+    width: 800px;
+    height: 800px;
+
+    left: -400px;
+    top: -400px;
+
+    transform-style: preserve-3d;
+}
+
+/* =========================================================
+   FLOOR
+========================================================= */
+
+.floor {
+    position: absolute;
+
+    width: 800px;
+    height: 800px;
+
+    transform:
+        rotateX(90deg)
+        translateZ(-100px);
+
+    background-color: #29323f;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,.055) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.055) 1px,
+            transparent 1px
+        );
+
+    background-size: 50px 50px;
+
+    border: 3px solid #596575;
+}
+
+/* =========================================================
+   WALLS
+========================================================= */
+
+.wall {
+    position: absolute;
+
+    background:
+        linear-gradient(
+            135deg,
+            #29323f,
+            #171d26
+        );
+
+    border: 2px solid #4b5564;
+}
+
+.back-wall {
+    width: 800px;
+    height: 300px;
+
+    transform:
+        translateZ(-400px)
+        translateY(-200px);
+}
+
+.left-wall {
+    width: 800px;
+    height: 300px;
+
+    left: -400px;
+
+    transform:
+        rotateY(90deg)
+        translateZ(-400px)
+        translateY(-200px);
+}
+
+/* =========================================================
+   CEILING LIGHT
+========================================================= */
+
+.ceiling-light {
+    position: absolute;
+
+    width: 180px;
+    height: 90px;
+
+    left: 310px;
+    top: 330px;
+
+    transform:
+        translateZ(100px)
+        rotateX(90deg);
+
+    background: rgba(255,255,255,.12);
+
+    border:
+        3px solid rgba(255,255,255,.25);
+
+    box-shadow:
+        0 0 70px rgba(255,255,255,.18);
+}
+
+/* =========================================================
+   CUBES
+========================================================= */
+
+.object {
+    position: absolute;
+
+    width: 80px;
+    height: 80px;
+
+    transform-style: preserve-3d;
+}
+
+.object-face {
+    position: absolute;
+
+    width: 80px;
+    height: 80px;
+
+    border:
+        2px solid rgba(255,255,255,.25);
+}
+
+.face-front {
+    transform: translateZ(40px);
+}
+
+.face-back {
+    transform:
+        rotateY(180deg)
+        translateZ(40px);
+}
+
+.face-right {
+    transform:
+        rotateY(90deg)
+        translateZ(40px);
+}
+
+.face-left {
+    transform:
+        rotateY(-90deg)
+        translateZ(40px);
+}
+
+.face-top {
+    transform:
+        rotateX(90deg)
+        translateZ(40px);
+}
+
+.face-bottom {
+    transform:
+        rotateX(-90deg)
+        translateZ(40px);
+}
+
+#cube1 {
+    left: 180px;
+    top: 400px;
+
+    transform:
+        translateZ(-20px)
+        rotateY(20deg);
+}
+
+#cube1 .object-face {
+    background: #397ed1;
+}
+
+#cube2 {
+    left: 520px;
+    top: 230px;
+
+    transform:
+        translateZ(-30px)
+        rotateY(-25deg);
+}
+
+#cube2 .object-face {
+    background: #8a4fd1;
+}
+
+#cube3 {
+    left: 100px;
+    top: 150px;
+
+    transform:
+        translateZ(-10px)
+        rotateY(35deg);
+}
+
+#cube3 .object-face {
+    background: #43a765;
+}
+
+#cube4 {
+    left: 550px;
+    top: 500px;
+
+    transform:
+        translateZ(-10px)
+        rotateY(-20deg);
+}
+
+#cube4 .object-face {
+    background: #d58a3d;
+}
+
+/* =========================================================
+   ROBOT
+========================================================= */
+
+#robot {
+    position: absolute;
+
+    width: 90px;
+    height: 150px;
+
+    left: 355px;
+    top: 330px;
+
+    transform-style: preserve-3d;
+
+    transition:
+        left .1s linear,
+        top .1s linear;
+}
+
+.robot-shadow {
+    position: absolute;
+
+    width: 100px;
+    height: 42px;
+
+    left: -5px;
+    top: 115px;
+
+    background: rgba(0,0,0,.35);
+
+    border-radius: 50%;
+
+    transform:
+        rotateX(90deg);
+
+    filter: blur(5px);
+}
+
+.robot-body {
+    position: absolute;
+
+    width: 70px;
+    height: 80px;
+
+    left: 10px;
+    top: 55px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #5aaaff,
+            #2867ad
+        );
+
+    border:
+        3px solid #a9dcff;
+
+    border-radius: 12px;
+
+    transform: translateZ(25px);
+}
+
+.robot-head {
+    position: absolute;
+
+    width: 82px;
+    height: 65px;
+
+    left: 4px;
+    top: 0;
+
+    background:
+        linear-gradient(
+            135deg,
+            #8bd0ff,
+            #4b91cf
+        );
+
+    border:
+        3px solid #c9ecff;
+
+    border-radius: 15px;
+
+    transform: translateZ(25px);
+}
+
+.eye {
+    position: absolute;
+
+    width: 12px;
+    height: 16px;
+
+    top: 22px;
+
+    background: #10151d;
+
+    border-radius: 4px;
+
+    box-shadow:
+        0 0 10px rgba(100,200,255,.7);
+}
+
+.eye.left {
+    left: 20px;
+}
+
+.eye.right {
+    right: 20px;
+}
+
+.antenna {
+    position: absolute;
+
+    width: 5px;
+    height: 25px;
+
+    left: 39px;
+    top: -24px;
+
+    background: #d9e8f5;
+
+    transform: translateZ(25px);
+}
+
+.antenna-ball {
+    position: absolute;
+
+    width: 14px;
+    height: 14px;
+
+    left: 35px;
+    top: -38px;
+
+    border-radius: 50%;
+
+    background: #ff5555;
+
+    box-shadow:
+        0 0 15px rgba(255,80,80,.7);
+
+    transform: translateZ(25px);
+}
+
+.arm {
+    position: absolute;
+
+    width: 15px;
+    height: 60px;
+
+    top: 65px;
+
+    background: #4b8fca;
+
+    border-radius: 10px;
+
+    transform-origin: top center;
+
+    transform:
+        translateZ(25px);
+}
+
+.arm.left {
+    left: -7px;
+    transform:
+        rotateZ(12deg)
+        translateZ(25px);
+}
+
+.arm.right {
+    right: -7px;
+    transform:
+        rotateZ(-12deg)
+        translateZ(25px);
+}
+
+/* =========================================================
+   UI
+========================================================= */
+
+#ui {
+    position: fixed;
+    inset: 0;
+
+    z-index: 100;
+
+    pointer-events: none;
+
+    transition:
+        opacity .25s;
+}
+
+#ui.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* All panels */
+
+.panel {
+    position: absolute;
+
+    pointer-events: auto;
+
+    background:
+        rgba(10,14,21,.94);
+
+    border:
+        1px solid rgba(255,255,255,.16);
+
+    border-radius: 14px;
+
+    padding: 12px;
+
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    box-shadow:
+        0 8px 30px rgba(0,0,0,.4);
+}
+
+/* =========================================================
+   TOP CONTROLS
+========================================================= */
+
+#controls {
+    top: 12px;
+    left: 12px;
+
+    width: 210px;
+}
+
+#controls h2 {
+    margin: 0 0 3px;
     font-size: 18px;
-    margin-right: auto;
+}
+
+.status {
+    font-size: 11px;
+    opacity: .6;
 }
 
 button {
-    background: #292e37;
+    border: 0;
+
+    border-radius: 9px;
+
+    padding: 9px 11px;
+
+    margin-top: 6px;
+
     color: white;
-    border: 1px solid #414753;
-    border-radius: 6px;
-    padding: 8px 12px;
-    cursor: pointer;
-}
 
-button:hover {
-    background: #363c47;
-}
+    background: #287df5;
 
-#main {
-    height: calc(100vh - 55px);
-    display: grid;
-    grid-template-columns: 1fr 330px;
-}
+    font-weight: bold;
 
-#world {
-    position: relative;
-    overflow: hidden;
-    background:
-        linear-gradient(#15191e 1px, transparent 1px),
-        linear-gradient(90deg, #15191e 1px, transparent 1px);
-    background-size: 40px 40px;
-}
-
-canvas {
-    display: block;
-}
-
-#panel {
-    background: #171a20;
-    border-left: 1px solid #30343c;
-    padding: 15px;
-    overflow-y: auto;
-}
-
-.section {
-    border: 1px solid #30343c;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 12px;
-}
-
-.section h2 {
-    font-size: 14px;
-    margin-top: 0;
-    color: #bbb;
-}
-
-.stat {
-    display: flex;
-    justify-content: space-between;
-    margin: 6px 0;
     font-size: 13px;
 }
 
-.bar {
-    height: 8px;
-    background: #292d34;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-top: 3px;
+button:active {
+    transform: scale(.96);
 }
 
-.bar div {
-    height: 100%;
-    width: 50%;
-    background: #7fd35c;
+button.secondary {
+    background: #353d4a;
 }
 
-.neuron {
-    margin: 7px 0;
+button.danger {
+    background: #b83b4c;
+}
+
+/* =========================================================
+   HIDE BUTTON
+========================================================= */
+
+#hideButton {
+    position: fixed;
+
+    right: 12px;
+    top: 12px;
+
+    z-index: 200;
+
+    width: 48px;
+    height: 48px;
+
+    padding: 0;
+
+    margin: 0;
+
+    border-radius: 50%;
+
+    background:
+        rgba(15,20,29,.9);
+
+    border:
+        1px solid rgba(255,255,255,.2);
+
+    font-size: 20px;
+
+    pointer-events: auto;
+}
+
+/* Floating button when UI is hidden */
+
+#showButton {
+    display: none;
+
+    position: fixed;
+
+    right: 12px;
+    top: 12px;
+
+    z-index: 300;
+
+    width: 48px;
+    height: 48px;
+
+    border-radius: 50%;
+
+    padding: 0;
+    margin: 0;
+
+    background:
+        rgba(15,20,29,.9);
+
+    border:
+        1px solid rgba(255,255,255,.2);
+
+    font-size: 20px;
+}
+
+body.ui-hidden #ui {
+    display: none;
+}
+
+body.ui-hidden #showButton {
+    display: block;
+}
+
+/* =========================================================
+   THOUGHT
+========================================================= */
+
+#thought {
+    left: 50%;
+    top: 12px;
+
+    transform:
+        translateX(-50%);
+
+    width:
+        min(420px, 42vw);
+
+    text-align: center;
+
+    font-size: 13px;
+}
+
+/* =========================================================
+   TEACH / MEMORY BUTTONS
+========================================================= */
+
+#quickButtons {
+    left: 12px;
+    bottom: 12px;
+
+    display: flex;
+
+    gap: 6px;
+
+    padding: 8px;
+}
+
+#quickButtons button {
+    margin: 0;
+}
+
+/* =========================================================
+   POPUP
+========================================================= */
+
+.modal {
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 250;
+
+    background:
+        rgba(0,0,0,.65);
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 15px;
+}
+
+.modal.open {
+    display: flex;
+}
+
+.modal-box {
+    width:
+        min(500px, 100%);
+
+    max-height:
+        85vh;
+
+    overflow-y: auto;
+
+    background:
+        #111720;
+
+    border:
+        1px solid #46505e;
+
+    border-radius: 16px;
+
+    padding: 16px;
+
+    box-shadow:
+        0 20px 70px rgba(0,0,0,.6);
+}
+
+.modal-box h2 {
+    margin-top: 0;
+}
+
+textarea {
+    width: 100%;
+
+    min-height: 110px;
+
+    padding: 10px;
+
+    resize: vertical;
+
+    border-radius: 9px;
+
+    border:
+        1px solid #424b59;
+
+    background: #181d26;
+
+    color: white;
+
+    font-size: 14px;
+
+    outline: none;
+}
+
+input {
+    width: 100%;
+
+    padding: 9px;
+
+    margin-bottom: 8px;
+
+    border-radius: 9px;
+
+    border:
+        1px solid #424b59;
+
+    background: #181d26;
+
+    color: white;
+
+    outline: none;
+}
+
+/* =========================================================
+   MEMORIES
+========================================================= */
+
+.memory {
+    padding: 10px;
+
+    margin-top: 7px;
+
+    background: #1c232e;
+
+    border-radius: 9px;
+
+    font-size: 13px;
+
+    word-break: break-word;
+}
+
+.memory button {
     font-size: 11px;
+    padding: 6px 8px;
 }
 
-.neuron .bar div {
-    background: #6bb7ff;
+.small {
+    font-size: 11px;
+    opacity: .6;
 }
 
-#message {
-    font-size: 12px;
-    color: #aaa;
-    min-height: 32px;
+/* =========================================================
+   ACTIVITY
+========================================================= */
+
+#activityList {
+    max-height: 300px;
+
+    overflow-y: auto;
 }
 
-#instructions {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(15,17,20,.8);
-    padding: 8px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    color: #aaa;
+.log {
+    padding: 6px 0;
+
+    font-size: 11px;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.07);
+
+    opacity: .85;
 }
+
+/* =========================================================
+   MOBILE LAYOUT
+========================================================= */
+
+@media(max-width:600px) {
+
+    #controls {
+        width: auto;
+
+        left: 10px;
+        top: 10px;
+
+        padding: 8px;
+    }
+
+    #controls h2 {
+        font-size: 15px;
+    }
+
+    #controls .status {
+        display: none;
+    }
+
+    #controls button {
+        font-size: 11px;
+        padding: 8px;
+    }
+
+    #thought {
+        top: 72px;
+
+        width: calc(100vw - 120px);
+
+        font-size: 11px;
+
+        padding: 8px;
+    }
+
+    #quickButtons {
+        bottom: 10px;
+        left: 10px;
+
+        padding: 6px;
+    }
+
+    #quickButtons button {
+        font-size: 11px;
+        padding: 8px;
+    }
+
+    #hideButton,
+    #showButton {
+        width: 44px;
+        height: 44px;
+    }
+
+    .modal {
+        padding: 8px;
+    }
+
+    .modal-box {
+        max-height: 90vh;
+        padding: 14px;
+    }
+
+}
+
+/* Very small phones */
+
+@media(max-width:390px) {
+
+    #controls {
+        transform: scale(.9);
+        transform-origin: top left;
+    }
+
+    #thought {
+        top: 65px;
+        width: 45vw;
+    }
+
+    #quickButtons {
+        transform: scale(.9);
+        transform-origin: bottom left;
+    }
+
+}
+
 </style>
 </head>
 
 <body>
 
-<div id="topbar">
+<!-- =======================================================
+     3D WORLD
+======================================================= -->
 
-    <h1>🪰 Virtual Fruit Fly Brain</h1>
+<div id="world">
 
-    <button onclick="toggleSimulation()">Pause / Run</button>
-    <button onclick="stepSimulation()">Step</button>
-    <button onclick="addFood()">🍎 Add Food</button>
-    <button onclick="blowFly()">💨 Blow</button>
-    <button onclick="teachFly()">🧠 Stimulate</button>
+    <div id="camera">
 
-</div>
+        <div id="room">
 
-<div id="main">
+            <div class="floor"></div>
 
-    <div id="world">
-        <canvas id="canvas"></canvas>
+            <div class="wall back-wall"></div>
 
-        <div id="instructions">
-            Click anywhere to place food • Buttons stimulate the fly
-        </div>
-    </div>
+            <div class="wall left-wall"></div>
 
-    <div id="panel">
+            <div class="ceiling-light"></div>
 
-        <div class="section">
 
-            <h2>FLY STATE</h2>
+            <!-- BLUE CUBE -->
 
-            <div class="stat">
-                <span>Hunger</span>
-                <span id="hungerText">50%</span>
+            <div class="object" id="cube1">
+
+                <div class="object-face face-front"></div>
+                <div class="object-face face-back"></div>
+                <div class="object-face face-right"></div>
+                <div class="object-face face-left"></div>
+                <div class="object-face face-top"></div>
+                <div class="object-face face-bottom"></div>
+
             </div>
 
-            <div class="bar">
-                <div id="hungerBar"></div>
+
+            <!-- PURPLE CUBE -->
+
+            <div class="object" id="cube2">
+
+                <div class="object-face face-front"></div>
+                <div class="object-face face-back"></div>
+                <div class="object-face face-right"></div>
+                <div class="object-face face-left"></div>
+                <div class="object-face face-top"></div>
+                <div class="object-face face-bottom"></div>
+
             </div>
 
-            <div class="stat">
-                <span>Stress</span>
-                <span id="stressText">0%</span>
+
+            <!-- GREEN CUBE -->
+
+            <div class="object" id="cube3">
+
+                <div class="object-face face-front"></div>
+                <div class="object-face face-back"></div>
+                <div class="object-face face-right"></div>
+                <div class="object-face face-left"></div>
+                <div class="object-face face-top"></div>
+                <div class="object-face face-bottom"></div>
+
             </div>
 
-            <div class="bar">
-                <div id="stressBar"></div>
+
+            <!-- ORANGE CUBE -->
+
+            <div class="object" id="cube4">
+
+                <div class="object-face face-front"></div>
+                <div class="object-face face-back"></div>
+                <div class="object-face face-right"></div>
+                <div class="object-face face-left"></div>
+                <div class="object-face face-top"></div>
+                <div class="object-face face-bottom"></div>
+
             </div>
 
-            <div class="stat">
-                <span>Energy</span>
-                <span id="energyText">100%</span>
-            </div>
 
-            <div class="bar">
-                <div id="energyBar"></div>
-            </div>
+            <!-- ROBOT -->
 
-        </div>
+            <div id="robot">
 
-        <div class="section">
+                <div class="robot-shadow"></div>
 
-            <h2>SENSORY INPUT</h2>
+                <div class="robot-body"></div>
 
-            <div class="stat">
-                <span>Food smell</span>
-                <span id="smellText">0%</span>
-            </div>
+                <div class="robot-head">
 
-            <div class="bar">
-                <div id="smellBar"></div>
-            </div>
+                    <div class="eye left"></div>
+                    <div class="eye right"></div>
 
-            <div class="stat">
-                <span>Light</span>
-                <span id="lightText">50%</span>
-            </div>
-
-            <div class="bar">
-                <div id="lightBar"></div>
-            </div>
-
-            <div class="stat">
-                <span>Threat</span>
-                <span id="threatText">0%</span>
-            </div>
-
-            <div class="bar">
-                <div id="threatBar"></div>
-            </div>
-
-        </div>
-
-        <div class="section">
-
-            <h2>NEURAL ACTIVITY</h2>
-
-            <div class="neuron">
-                Visual neurons
-                <div class="bar">
-                    <div id="nVisual"></div>
                 </div>
-            </div>
 
-            <div class="neuron">
-                Olfactory neurons
-                <div class="bar">
-                    <div id="nSmell"></div>
-                </div>
-            </div>
+                <div class="antenna"></div>
 
-            <div class="neuron">
-                Escape circuit
-                <div class="bar">
-                    <div id="nEscape"></div>
-                </div>
-            </div>
+                <div class="antenna-ball"></div>
 
-            <div class="neuron">
-                Feeding circuit
-                <div class="bar">
-                    <div id="nFeed"></div>
-                </div>
-            </div>
+                <div class="arm left"></div>
 
-            <div class="neuron">
-                Exploration circuit
-                <div class="bar">
-                    <div id="nExplore"></div>
-                </div>
-            </div>
+                <div class="arm right"></div>
 
-        </div>
-
-        <div class="section">
-
-            <h2>MEMORY</h2>
-
-            <div id="memory">
-                No memories yet.
-            </div>
-
-        </div>
-
-        <div class="section">
-
-            <h2>EVENT LOG</h2>
-
-            <div id="message">
-                Fly initialized.
             </div>
 
         </div>
@@ -290,774 +996,1136 @@ canvas {
     </div>
 
 </div>
+
+
+<!-- =======================================================
+     UI
+======================================================= -->
+
+<div id="ui">
+
+    <div id="controls" class="panel">
+
+        <h2>🤖 AI World</h2>
+
+        <div class="status">
+            Autonomous AI experiment
+        </div>
+
+        <button
+            id="pauseButton"
+            onclick="toggleAI()">
+            ⏸ Pause
+        </button>
+
+        <button
+            class="secondary"
+            onclick="makeThought()">
+            💡 Think
+        </button>
+
+    </div>
+
+
+    <div id="thought" class="panel">
+
+        💭 Waiting for a thought...
+
+    </div>
+
+
+    <div id="quickButtons" class="panel">
+
+        <button
+            onclick="openModal('teachModal')">
+            🧠 Teach
+        </button>
+
+        <button
+            onclick="openModal('memoryModal')">
+            📚 Memory
+        </button>
+
+        <button
+            onclick="openModal('activityModal')">
+            📜 Activity
+        </button>
+
+    </div>
+
+
+    <button
+        id="hideButton"
+        onclick="hideUI()">
+
+        👁️
+
+    </button>
+
+</div>
+
+
+<button
+    id="showButton"
+    onclick="showUI()">
+
+    ☰
+
+</button>
+
+
+<!-- =======================================================
+     TEACH MODAL
+======================================================= -->
+
+<div
+    id="teachModal"
+    class="modal">
+
+    <div class="modal-box">
+
+        <h2>🧠 Teach the AI</h2>
+
+        <div class="small">
+            Anything you teach it will be saved on this device.
+        </div>
+
+        <textarea
+            id="newMemory"
+            placeholder="Example: My favourite game is Geometry Dash."
+        ></textarea>
+
+        <button onclick="teachAI()">
+            🧠 Save Memory
+        </button>
+
+        <button
+            class="secondary"
+            onclick="closeModal('teachModal')">
+            Close
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =======================================================
+     MEMORY MODAL
+======================================================= -->
+
+<div
+    id="memoryModal"
+    class="modal">
+
+    <div class="modal-box">
+
+        <h2>📚 AI Memory</h2>
+
+        <div class="small">
+            These memories are stored locally on your device.
+        </div>
+
+        <br>
+
+        <input
+            id="searchMemory"
+            placeholder="Search memories..."
+            oninput="displayMemories()"
+        >
+
+        <div id="memoryList"></div>
+
+        <br>
+
+        <button onclick="exportMemory()">
+            📤 Export
+        </button>
+
+        <button
+            class="secondary"
+            onclick="document.getElementById('importFile').click()">
+            📥 Import
+        </button>
+
+        <input
+            id="importFile"
+            type="file"
+            accept=".json"
+            style="display:none"
+            onchange="importMemory(event)"
+        >
+
+        <br>
+
+        <button
+            class="danger"
+            onclick="forgetEverything()">
+            🗑 Forget Everything
+        </button>
+
+        <button
+            class="secondary"
+            onclick="closeModal('memoryModal')">
+            Close
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =======================================================
+     ACTIVITY MODAL
+======================================================= -->
+
+<div
+    id="activityModal"
+    class="modal">
+
+    <div class="modal-box">
+
+        <h2>📜 Activity</h2>
+
+        <div id="activityList"></div>
+
+        <button
+            class="secondary"
+            onclick="clearLog()">
+            Clear
+        </button>
+
+        <button
+            class="secondary"
+            onclick="closeModal('activityModal')">
+            Close
+        </button>
+
+    </div>
+
+</div>
+
 
 <script>
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+/* =========================================================
+   MEMORY
+========================================================= */
 
-let running = true;
+const MEMORY_KEY =
+    "AI_WORLD_MEMORY_MOBILE_V1";
 
-function resize() {
-    canvas.width = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
-}
-
-window.addEventListener("resize", resize);
-resize();
+let memories = [];
 
 
-// ============================================================
-// FLY
-// ============================================================
+try {
 
-const fly = {
+    memories =
+        JSON.parse(
+            localStorage.getItem(
+                MEMORY_KEY
+            )
+        ) || [];
 
-    x: canvas.width / 2,
-    y: canvas.height / 2,
+} catch {
 
-    angle: Math.random() * Math.PI * 2,
+    memories = [];
 
-    speed: 1.2,
-
-    hunger: 0.5,
-    stress: 0,
-    energy: 1,
-
-    smell: 0,
-    threat: 0,
-    light: 0.5,
-
-    neurons: {
-        visual: 0,
-        smell: 0,
-        escape: 0,
-        feeding: 0,
-        exploration: 0
-    },
-
-    memory: [],
-
-    eating: false,
-
-    startled: false,
-
-    startleTimer: 0
-};
-
-
-// ============================================================
-// FOOD
-// ============================================================
-
-let foods = [];
-
-function addFood(
-    x = Math.random() * canvas.width,
-    y = Math.random() * canvas.height
-) {
-
-    foods.push({
-        x: x,
-        y: y,
-        amount: 1
-    });
-
-    log("A food source appeared.");
 }
 
 
-// Click to place food
+function saveMemories() {
 
-canvas.addEventListener("click", function(e) {
+    try {
 
-    const rect = canvas.getBoundingClientRect();
+        localStorage.setItem(
+            MEMORY_KEY,
+            JSON.stringify(memories)
+        );
 
-    addFood(
-        e.clientX - rect.left,
-        e.clientY - rect.top
-    );
+    } catch {
 
-});
+        alert(
+            "The browser could not save the memory."
+        );
 
-
-// ============================================================
-// UTILITY
-// ============================================================
-
-function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
-}
-
-function distance(a, b) {
-    return Math.hypot(
-        a.x - b.x,
-        a.y - b.y
-    );
-}
-
-
-// ============================================================
-// SENSORY SYSTEM
-// ============================================================
-
-function senseEnvironment() {
-
-    let closestFood = null;
-    let closestDistance = Infinity;
-
-    for (const food of foods) {
-
-        const d = distance(fly, food);
-
-        if (d < closestDistance) {
-            closestDistance = d;
-            closestFood = food;
-        }
     }
 
-    if (closestFood) {
+}
 
-        fly.smell = clamp(
-            1 - closestDistance / 350,
-            0,
-            1
+
+/* =========================================================
+   TEACH
+========================================================= */
+
+function teachAI() {
+
+    const input =
+        document.getElementById(
+            "newMemory"
         );
+
+    const text =
+        input.value.trim();
+
+    if (!text) return;
+
+
+    memories.push({
+
+        id: Date.now(),
+
+        text: text,
+
+        created:
+            new Date().toISOString()
+
+    });
+
+
+    saveMemories();
+
+    input.value = "";
+
+    displayMemories();
+
+    closeModal(
+        "teachModal"
+    );
+
+
+    showThought(
+        "I learned something new: " +
+        text
+    );
+
+
+    logActivity(
+        "🧠 Learned: " +
+        text
+    );
+
+}
+
+
+/* =========================================================
+   MEMORY DISPLAY
+========================================================= */
+
+function displayMemories() {
+
+    const list =
+        document.getElementById(
+            "memoryList"
+        );
+
+    const search =
+        document.getElementById(
+            "searchMemory"
+        ).value.toLowerCase();
+
+
+    list.innerHTML = "";
+
+
+    const filtered =
+        memories.filter(
+            memory =>
+                memory.text
+                .toLowerCase()
+                .includes(search)
+        );
+
+
+    if (
+        filtered.length === 0
+    ) {
+
+        list.innerHTML =
+            '<div class="small">No memories found.</div>';
+
+        return;
+
+    }
+
+
+    filtered
+        .slice()
+        .reverse()
+        .forEach(memory => {
+
+            const box =
+                document.createElement(
+                    "div"
+                );
+
+            box.className =
+                "memory";
+
+
+            const text =
+                document.createElement(
+                    "div"
+                );
+
+            text.textContent =
+                memory.text;
+
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+            button.textContent =
+                "Forget";
+
+
+            button.className =
+                "danger";
+
+
+            button.onclick =
+                function() {
+
+                    forgetMemory(
+                        memory.id
+                    );
+
+                };
+
+
+            box.appendChild(text);
+
+            box.appendChild(button);
+
+            list.appendChild(box);
+
+        });
+
+}
+
+
+/* =========================================================
+   FORGET
+========================================================= */
+
+function forgetMemory(id) {
+
+    memories =
+        memories.filter(
+            memory =>
+                memory.id !== id
+        );
+
+    saveMemories();
+
+    displayMemories();
+
+    logActivity(
+        "🗑️ Forgot a memory."
+    );
+
+}
+
+
+function forgetEverything() {
+
+    if (
+        !confirm(
+            "Forget every memory?"
+        )
+    ) return;
+
+
+    memories = [];
+
+    saveMemories();
+
+    displayMemories();
+
+    showThought(
+        "I have forgotten everything."
+    );
+
+    logActivity(
+        "🗑️ All memories erased."
+    );
+
+}
+
+
+/* =========================================================
+   IMPORT / EXPORT
+========================================================= */
+
+function exportMemory() {
+
+    const data =
+        JSON.stringify(
+            memories,
+            null,
+            2
+        );
+
+
+    const blob =
+        new Blob(
+            [data],
+            {
+                type:
+                    "application/json"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    link.href = url;
+
+    link.download =
+        "AI-Memory.json";
+
+
+    link.click();
+
+    URL.revokeObjectURL(
+        url
+    );
+
+
+    logActivity(
+        "📤 Memory exported."
+    );
+
+}
+
+
+function importMemory(event) {
+
+    const file =
+        event.target.files[0];
+
+    if (!file) return;
+
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload =
+        function(e) {
+
+            try {
+
+                const imported =
+                    JSON.parse(
+                        e.target.result
+                    );
+
+
+                if (
+                    !Array.isArray(
+                        imported
+                    )
+                ) {
+
+                    throw new Error();
+
+                }
+
+
+                memories =
+                    imported;
+
+
+                saveMemories();
+
+                displayMemories();
+
+
+                logActivity(
+                    "📥 Memory imported."
+                );
+
+
+            } catch {
+
+                alert(
+                    "Invalid memory file."
+                );
+
+            }
+
+        };
+
+
+    reader.readAsText(file);
+
+}
+
+
+/* =========================================================
+   THOUGHTS
+========================================================= */
+
+const basicThoughts = [
+
+    "I wonder what is around me.",
+
+    "I should explore somewhere new.",
+
+    "I wonder what I could discover.",
+
+    "There are still things I don't understand.",
+
+    "I wonder what I should investigate next."
+
+];
+
+
+function makeThought() {
+
+    let thought;
+
+
+    if (
+        memories.length === 0
+    ) {
+
+        thought =
+            basicThoughts[
+                Math.floor(
+                    Math.random() *
+                    basicThoughts.length
+                )
+            ];
 
     } else {
 
-        fly.smell *= 0.95;
+        const memory =
+            memories[
+                Math.floor(
+                    Math.random() *
+                    memories.length
+                )
+            ];
+
+
+        const choices = [
+
+            "I remember that " +
+            memory.text,
+
+            "I'm thinking about something I learned: " +
+            memory.text,
+
+            "That reminds me of this: " +
+            memory.text,
+
+            "I wonder how this relates to my world: " +
+            memory.text,
+
+            "I should keep this in mind: " +
+            memory.text
+
+        ];
+
+
+        thought =
+            choices[
+                Math.floor(
+                    Math.random() *
+                    choices.length
+                )
+            ];
 
     }
 
-    fly.light =
-        0.5 +
-        Math.sin(fly.x / 180) * 0.25;
 
-    fly.threat *= 0.92;
+    showThought(
+        thought
+    );
+
+
+    logActivity(
+        "💭 " +
+        thought
+    );
+
 }
 
 
-// ============================================================
-// BRAIN
-// ============================================================
-
-function updateBrain() {
-
-    // Visual system
-
-    fly.neurons.visual =
-        clamp(fly.light, 0, 1);
-
-
-    // Olfactory system
-
-    fly.neurons.smell =
-        clamp(fly.smell, 0, 1);
-
-
-    // Escape circuit
-
-    fly.neurons.escape =
-        clamp(
-            fly.threat * 1.5 +
-            fly.stress * 0.3,
-            0,
-            1
-        );
-
-
-    // Feeding circuit
-
-    fly.neurons.feeding =
-        clamp(
-            fly.smell *
-            (0.5 + fly.hunger),
-            0,
-            1
-        );
-
-
-    // Exploration circuit
-
-    fly.neurons.exploration =
-        clamp(
-            1 -
-            fly.neurons.escape -
-            fly.neurons.feeding * 0.5,
-            0,
-            1
-        );
-
-
-    // Internal state
-
-    fly.hunger += 0.00015;
-
-    fly.hunger =
-        clamp(fly.hunger, 0, 1);
-
-
-    fly.energy -= 0.00005;
-
-    fly.energy =
-        clamp(fly.energy, 0, 1);
-
-
-    fly.stress *= 0.995;
-}
-
-
-// ============================================================
-// MOTOR SYSTEM
-// ============================================================
-
-function moveFly() {
-
-    let desiredAngle = fly.angle;
-
-
-    // ESCAPE
-
-    if (fly.neurons.escape > 0.25) {
-
-        desiredAngle +=
-            Math.PI +
-            (Math.random() - 0.5) * 1.5;
-
-        fly.speed = 4;
-
-        fly.startled = true;
-
-    }
-
-
-    // FOOD SEEKING
-
-    else if (fly.neurons.feeding > 0.25) {
-
-        let closest = null;
-        let bestDistance = Infinity;
-
-        for (const food of foods) {
-
-            const d = distance(fly, food);
-
-            if (d < bestDistance) {
-
-                bestDistance = d;
-                closest = food;
-
-            }
-        }
-
-        if (closest) {
-
-            desiredAngle =
-                Math.atan2(
-                    closest.y - fly.y,
-                    closest.x - fly.x
-                );
-
-            fly.speed = 1.7;
-        }
-
-    }
-
-
-    // EXPLORATION
-
-    else {
-
-        desiredAngle +=
-            (Math.random() - 0.5) * 0.15;
-
-        fly.speed = 1.2;
-
-    }
-
-
-    // Smooth turning
-
-    let difference =
-        Math.atan2(
-            Math.sin(desiredAngle - fly.angle),
-            Math.cos(desiredAngle - fly.angle)
-        );
-
-    fly.angle += difference * 0.12;
-
-
-    // Move
-
-    fly.x +=
-        Math.cos(fly.angle) *
-        fly.speed;
-
-    fly.y +=
-        Math.sin(fly.angle) *
-        fly.speed;
-
-
-    // Boundaries
-
-    if (fly.x < 10) {
-        fly.x = 10;
-        fly.angle = 0;
-    }
-
-    if (fly.x > canvas.width - 10) {
-        fly.x = canvas.width - 10;
-        fly.angle = Math.PI;
-    }
-
-    if (fly.y < 10) {
-        fly.y = 10;
-        fly.angle = Math.PI / 2;
-    }
-
-    if (fly.y > canvas.height - 10) {
-        fly.y = canvas.height - 10;
-        fly.angle = -Math.PI / 2;
-    }
-}
-
-
-// ============================================================
-// EATING
-// ============================================================
-
-function eatFood() {
-
-    for (let i = foods.length - 1; i >= 0; i--) {
-
-        const food = foods[i];
-
-        if (distance(fly, food) < 15) {
-
-            fly.eating = true;
-
-            fly.hunger -= 0.01;
-            fly.energy += 0.005;
-
-            food.amount -= 0.003;
-
-            if (food.amount <= 0) {
-
-                foods.splice(i, 1);
-
-                log("The fly ate a food cube.");
-
-                remember("Food location");
-            }
-        }
-    }
-
-    fly.hunger =
-        clamp(fly.hunger, 0, 1);
-
-    fly.energy =
-        clamp(fly.energy, 0, 1);
-}
-
-
-// ============================================================
-// BLOW
-// ============================================================
-
-function blowFly() {
-
-    fly.threat = 1;
-
-    fly.stress = 1;
-
-    fly.startleTimer = 50;
-
-    log(
-        "💨 Air movement detected — fly startled!"
-    );
-
-    remember("Threat detected");
-}
-
-
-// ============================================================
-// INFORMATION INPUT
-// ============================================================
-
-function teachFly() {
-
-    fly.neurons.visual = 1;
-
-    fly.neurons.smell = 1;
-
-    fly.stress =
-        clamp(
-            fly.stress + 0.15,
-            0,
-            1
-        );
-
-    log(
-        "🧠 Artificial sensory information injected."
-    );
-}
-
-
-// ============================================================
-// MEMORY
-// ============================================================
-
-function remember(text) {
-
-    fly.memory.unshift(text);
-
-    if (fly.memory.length > 5) {
-        fly.memory.pop();
-    }
-
-    updateMemory();
-}
-
-function updateMemory() {
-
-    document.getElementById("memory").innerHTML =
-        fly.memory.length > 0
-        ? fly.memory
-            .map(x => "• " + x)
-            .join("<br>")
-        : "No memories yet.";
-}
-
-
-// ============================================================
-// DRAW
-// ============================================================
-
-function drawWorld() {
-
-    ctx.clearRect(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-
-    // Food
-
-    for (const food of foods) {
-
-        ctx.fillStyle = "#8de35c";
-
-        ctx.fillRect(
-            food.x - 7,
-            food.y - 7,
-            14,
-            14
-        );
-
-        ctx.strokeStyle = "#c0ff9b";
-
-        ctx.strokeRect(
-            food.x - 7,
-            food.y - 7,
-            14,
-            14
-        );
-    }
-
-
-    // Fly
-
-    ctx.save();
-
-    ctx.translate(
-        fly.x,
-        fly.y
-    );
-
-    ctx.rotate(fly.angle);
-
-
-    // Wings
-
-    ctx.globalAlpha = 0.45;
-
-    ctx.fillStyle = "#bde7ff";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        0,
-        -6,
-        12,
-        5,
-        -0.2,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        0,
-        6,
-        12,
-        5,
-        0.2,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-
-    // Body
-
-    ctx.globalAlpha = 1;
-
-    ctx.fillStyle = "#242424";
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        0,
-        0,
-        10,
-        6,
-        0,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-
-    // Head
-
-    ctx.fillStyle = "#161616";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        8,
-        0,
-        6,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-
-    // Eye
-
-    ctx.fillStyle = "#ff5555";
-
-    ctx.beginPath();
-
-    ctx.arc(
-        10,
-        -3,
-        2,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
-
-
-    ctx.restore();
-
-
-    // Threat radius
-
-    if (fly.threat > 0.05) {
-
-        ctx.strokeStyle =
-            "rgba(255,80,80," +
-            (fly.threat * 0.3) +
-            ")";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            fly.x,
-            fly.y,
-            60,
-            0,
-            Math.PI * 2
-        );
-
-        ctx.stroke();
-    }
-}
-
-
-// ============================================================
-// UI
-// ============================================================
-
-function updateUI() {
-
-    /*
-        IMPORTANT:
-        This function now separately handles
-        the normal stat bars and the neural bars.
-    */
-
-
-    function updateStat(name, value) {
-
-        value = clamp(value, 0, 1);
-
-        const bar =
-            document.getElementById(
-                name + "Bar"
-            );
-
-        const text =
-            document.getElementById(
-                name + "Text"
-            );
-
-        if (bar) {
-            bar.style.width =
-                (value * 100) + "%";
-        }
-
-        if (text) {
-            text.textContent =
-                Math.round(value * 100) + "%";
-        }
-    }
-
-
-    function updateNeuron(id, value) {
-
-        value = clamp(value, 0, 1);
-
-        const element =
-            document.getElementById(id);
-
-        if (element) {
-
-            element.style.width =
-                (value * 100) + "%";
-        }
-    }
-
-
-    // Internal states
-
-    updateStat("hunger", fly.hunger);
-    updateStat("stress", fly.stress);
-    updateStat("energy", fly.energy);
-
-
-    // Sensory input
-
-    updateStat("smell", fly.smell);
-    updateStat("light", fly.light);
-    updateStat("threat", fly.threat);
-
-
-    // Neural activity
-
-    updateNeuron(
-        "nVisual",
-        fly.neurons.visual
-    );
-
-    updateNeuron(
-        "nSmell",
-        fly.neurons.smell
-    );
-
-    updateNeuron(
-        "nEscape",
-        fly.neurons.escape
-    );
-
-    updateNeuron(
-        "nFeed",
-        fly.neurons.feeding
-    );
-
-    updateNeuron(
-        "nExplore",
-        fly.neurons.exploration
-    );
-}
-
-
-// ============================================================
-// SIMULATION
-// ============================================================
-
-function stepSimulation() {
-
-    senseEnvironment();
-
-    updateBrain();
-
-    moveFly();
-
-    eatFood();
-
-    updateUI();
-
-    drawWorld();
-}
-
-
-function loop() {
-
-    if (running) {
-        stepSimulation();
-    }
-
-    requestAnimationFrame(loop);
-}
-
-
-function toggleSimulation() {
-
-    running = !running;
-
-    log(
-        running
-        ? "Simulation running."
-        : "Simulation paused."
-    );
-}
-
-
-function log(text) {
+function showThought(text) {
 
     document.getElementById(
-        "message"
-    ).textContent = text;
+        "thought"
+    ).textContent =
+        "💭 " + text;
+
 }
 
 
-// ============================================================
-// START
-// ============================================================
+/* =========================================================
+   ACTIVITY
+========================================================= */
 
-addFood(
-    canvas.width * 0.7,
-    canvas.height * 0.5
+let activity = [];
+
+
+function logActivity(text) {
+
+    activity.unshift({
+
+        text: text,
+
+        time:
+            new Date()
+            .toLocaleTimeString()
+
+    });
+
+
+    activity =
+        activity.slice(
+            0,
+            50
+        );
+
+
+    displayActivity();
+
+}
+
+
+function displayActivity() {
+
+    const list =
+        document.getElementById(
+            "activityList"
+        );
+
+
+    list.innerHTML = "";
+
+
+    activity.forEach(item => {
+
+        const div =
+            document.createElement(
+                "div"
+            );
+
+        div.className =
+            "log";
+
+        div.textContent =
+            item.time +
+            "  " +
+            item.text;
+
+        list.appendChild(
+            div
+        );
+
+    });
+
+}
+
+
+function clearLog() {
+
+    activity = [];
+
+    displayActivity();
+
+}
+
+
+/* =========================================================
+   AI STATE
+========================================================= */
+
+let aiRunning = true;
+
+
+function toggleAI() {
+
+    aiRunning =
+        !aiRunning;
+
+
+    document.getElementById(
+        "pauseButton"
+    ).textContent =
+        aiRunning
+        ? "⏸ Pause"
+        : "▶ Resume";
+
+
+    logActivity(
+        aiRunning
+        ? "▶️ AI resumed."
+        : "⏸️ AI paused."
+    );
+
+}
+
+
+/* =========================================================
+   ROBOT
+========================================================= */
+
+const robot =
+    document.getElementById(
+        "robot"
+    );
+
+
+let robotX = 355;
+let robotZ = 330;
+
+let targetX = 355;
+let targetZ = 330;
+
+
+function chooseTarget() {
+
+    targetX =
+        70 +
+        Math.random() *
+        620;
+
+
+    targetZ =
+        80 +
+        Math.random() *
+        620;
+
+
+    logActivity(
+        "🚶 I chose somewhere new to explore."
+    );
+
+}
+
+
+chooseTarget();
+
+
+function moveRobot() {
+
+    if (!aiRunning) return;
+
+
+    const dx =
+        targetX -
+        robotX;
+
+
+    const dz =
+        targetZ -
+        robotZ;
+
+
+    const distance =
+        Math.sqrt(
+            dx * dx +
+            dz * dz
+        );
+
+
+    if (
+        distance < 5
+    ) {
+
+        chooseTarget();
+
+        return;
+
+    }
+
+
+    robotX +=
+        dx /
+        distance *
+        1.3;
+
+
+    robotZ +=
+        dz /
+        distance *
+        1.3;
+
+
+    robot.style.left =
+        robotX + "px";
+
+
+    robot.style.top =
+        robotZ + "px";
+
+
+    const bob =
+        Math.sin(
+            Date.now() *
+            .015
+        ) * 2;
+
+
+    robot.style.transform =
+        "translateZ(" +
+        bob +
+        "px)";
+
+}
+
+
+setInterval(
+    moveRobot,
+    30
 );
 
-updateUI();
 
-drawWorld();
+/* =========================================================
+   OBJECT DETECTION
+========================================================= */
 
-loop();
+const objects = [
+
+    {
+        x: 180,
+        z: 400,
+        name: "blue cube"
+    },
+
+    {
+        x: 520,
+        z: 230,
+        name: "purple cube"
+    },
+
+    {
+        x: 100,
+        z: 150,
+        name: "green cube"
+    },
+
+    {
+        x: 550,
+        z: 500,
+        name: "orange cube"
+    }
+
+];
+
+
+let lastObject = null;
+
+
+setInterval(
+    function() {
+
+        if (!aiRunning)
+            return;
+
+
+        for (
+            const object
+            of objects
+        ) {
+
+            const dx =
+                robotX -
+                object.x;
+
+
+            const dz =
+                robotZ -
+                object.z;
+
+
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dz * dz
+                );
+
+
+            if (
+                distance < 90
+            ) {
+
+                if (
+                    lastObject !==
+                    object.name
+                ) {
+
+                    lastObject =
+                        object.name;
+
+
+                    showThought(
+                        "I'm near the " +
+                        object.name +
+                        ". I wonder what it does."
+                    );
+
+
+                    logActivity(
+                        "🔎 Investigating " +
+                        object.name
+                    );
+
+                }
+
+            }
+
+        }
+
+    },
+    1000
+);
+
+
+/* =========================================================
+   UI
+========================================================= */
+
+function hideUI() {
+
+    document.body
+        .classList
+        .add("ui-hidden");
+
+}
+
+
+function showUI() {
+
+    document.body
+        .classList
+        .remove("ui-hidden");
+
+}
+
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function openModal(id) {
+
+    document
+        .getElementById(id)
+        .classList
+        .add("open");
+
+
+    if (
+        id === "memoryModal"
+    ) {
+
+        displayMemories();
+
+    }
+
+}
+
+
+function closeModal(id) {
+
+    document
+        .getElementById(id)
+        .classList
+        .remove("open");
+
+}
+
+
+/* Close modal by tapping outside */
+
+document
+    .querySelectorAll(".modal")
+    .forEach(modal => {
+
+        modal.addEventListener(
+            "click",
+            function(event) {
+
+                if (
+                    event.target ===
+                    modal
+                ) {
+
+                    modal.classList
+                        .remove("open");
+
+                }
+
+            }
+        );
+
+    });
+
+
+/* =========================================================
+   STARTUP
+========================================================= */
+
+displayMemories();
+
+displayActivity();
+
+
+logActivity(
+    "🤖 AI World started."
+);
+
+
+if (
+    memories.length > 0
+) {
+
+    logActivity(
+        "🧠 Loaded " +
+        memories.length +
+        " saved memories."
+    );
+
+} else {
+
+    logActivity(
+        "🧠 Memory is currently empty."
+    );
+
+}
+
+
+/* Think periodically */
+
+setInterval(
+    function() {
+
+        if (aiRunning) {
+
+            makeThought();
+
+        }
+
+    },
+    7000
+);
 
 </script>
 
