@@ -2,453 +2,519 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width,
-               initial-scale=1.0,
-               maximum-scale=1.0,
-               user-scalable=no">
-
-<title>Little AI</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Little AI — Autonomous World</title>
 
 <style>
-
 * {
     box-sizing: border-box;
 }
 
-html,
 body {
     margin: 0;
-    width: 100%;
-    height: 100%;
     overflow: hidden;
-
     font-family: Arial, sans-serif;
-
-    background: #10131a;
+    background: #050912;
     color: white;
 }
 
-canvas {
-    display: block;
+#world {
+    position: fixed;
+    inset: 0;
 }
-
-
-/* =========================
-   UI
-========================= */
 
 #ui {
-
     position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
 
-    top: 10px;
-    left: 10px;
-
-    z-index: 10;
-
-    width: min(
-        350px,
-        calc(100vw - 20px)
-    );
-
-    max-height:
-        calc(100vh - 20px);
-
-    overflow-y: auto;
-
-    padding: 14px;
-
+.panel {
+    pointer-events: auto;
+    position: absolute;
+    background: rgba(5, 10, 20, 0.82);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
     border-radius: 16px;
-
-    background:
-        rgba(10, 12, 18, 0.9);
-
-    backdrop-filter:
-        blur(12px);
-
-    -webkit-backdrop-filter:
-        blur(12px);
+    padding: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
 }
 
+#top {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-h1 {
-
+#top h1 {
     margin: 0;
-
-    font-size: 22px;
-
+    font-size: 18px;
 }
-
 
 #status {
-
-    margin-top: 4px;
-
-    color: #9aa5b1;
-
-    font-size: 13px;
-
-}
-
-
-.section {
-
-    margin-top: 14px;
-
-    padding-top: 12px;
-
-    border-top:
-        1px solid #303744;
-
-}
-
-
-.label {
-
-    margin-bottom: 5px;
-
-    color: #9aa5b1;
-
     font-size: 12px;
-
+    opacity: .75;
+    margin-top: 4px;
 }
 
-
-input {
-
-    width: 100%;
-
-    padding: 11px;
-
-    border: 0;
-
-    outline: none;
-
-    border-radius: 10px;
-
-    background: #202631;
-
-    color: white;
-
-    font-size: 14px;
-
+#brainPanel {
+    left: 12px;
+    bottom: 12px;
+    width: 330px;
+    max-height: 55vh;
+    overflow-y: auto;
 }
-
-
-button {
-
-    width: 100%;
-
-    padding: 11px;
-
-    margin-top: 7px;
-
-    border: 0;
-
-    border-radius: 10px;
-
-    background: #303949;
-
-    color: white;
-
-    font-size: 14px;
-
-    cursor: pointer;
-
-}
-
-
-button:active {
-
-    transform:
-        scale(0.98);
-
-}
-
 
 #thought {
-
-    min-height: 60px;
-
-    padding: 10px;
-
-    border-radius: 10px;
-
-    background: #181d26;
-
-    font-size: 14px;
-
+    font-size: 15px;
     line-height: 1.4;
-
 }
-
-
-#goal {
-
-    padding: 9px;
-
-    border-radius: 9px;
-
-    background: #181d26;
-
-    font-size: 13px;
-
-}
-
 
 #curiosity {
-
-    padding: 9px;
-
-    border-radius: 9px;
-
-    background: #181d26;
-
+    margin-top: 8px;
     font-size: 13px;
-
+    opacity: .8;
 }
 
+#stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 12px;
+}
 
-#memory {
-
-    max-height: 160px;
-
-    overflow-y: auto;
-
+.stat {
+    background: rgba(255,255,255,.06);
+    padding: 8px;
+    border-radius: 10px;
     font-size: 12px;
-
 }
 
-
-.memory-item {
-
-    padding: 7px 0;
-
-    border-bottom:
-        1px solid #292f39;
-
-    color: #c5ccd5;
-
+#controls {
+    right: 12px;
+    bottom: 12px;
+    width: 280px;
+    max-height: 55vh;
+    overflow-y: auto;
 }
 
+input, button {
+    width: 100%;
+    border: 0;
+    border-radius: 9px;
+    padding: 10px;
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+input {
+    background: rgba(255,255,255,.1);
+    color: white;
+    outline: none;
+}
+
+button {
+    background: rgba(255,255,255,.13);
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: rgba(255,255,255,.2);
+}
+
+.sectionTitle {
+    font-size: 12px;
+    opacity: .6;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
 #log {
-
-    max-height: 170px;
-
-    overflow-y: auto;
-
     font-size: 11px;
-
-    color: #aeb7c3;
-
+    line-height: 1.5;
+    opacity: .7;
 }
 
-
-.log-item {
-
-    margin-bottom: 6px;
-
+.logItem {
+    margin-bottom: 5px;
 }
 
-
-#hideButton {
-
+#hideUI {
     position: fixed;
-
-    z-index: 20;
-
-    top: 10px;
-    right: 10px;
-
+    top: 12px;
+    right: 12px;
     width: auto;
-
-    margin: 0;
-
-    padding:
-        9px 12px;
-
+    z-index: 20;
 }
-
 
 .hidden {
-
     display: none !important;
-
 }
 
-
-@media (max-width: 600px) {
-
-    #ui {
-
-        max-height: 55vh;
-
-        padding: 12px;
-
+@media (max-width: 700px) {
+    #brainPanel {
+        width: calc(100% - 24px);
+        bottom: 12px;
+        max-height: 34vh;
     }
 
-    input,
-    button {
-
-        font-size: 16px;
-
+    #controls {
+        width: calc(100% - 24px);
+        bottom: 12px;
+        max-height: 34vh;
+        transform: translateY(calc(34vh + 24px));
     }
 
+    #controls.mobileOpen {
+        transform: translateY(0);
+    }
 }
-
 </style>
 </head>
 
-
 <body>
 
+<div id="world"></div>
 
-<!-- =========================================
-     USER INTERFACE
-========================================= -->
+<button id="hideUI">Hide UI</button>
 
 <div id="ui">
 
-    <h1>🤖 Little AI</h1>
-
-    <div id="status">
-        Starting...
+    <div id="top" class="panel">
+        <div>
+            <h1>🧠 Little AI</h1>
+            <div id="status">Starting...</div>
+        </div>
     </div>
 
+    <div id="brainPanel" class="panel">
 
-    <div class="section">
+        <div class="sectionTitle">Current thought</div>
+        <div id="thought">...</div>
 
-        <div class="label">
-            🎯 Current Goal
-        </div>
+        <div class="sectionTitle">Current curiosity</div>
+        <div id="curiosity">Nothing yet.</div>
 
-        <div id="goal">
-            Explore the world
+        <div class="sectionTitle">Goal</div>
+        <div id="goal">Learn interesting things.</div>
+
+        <div id="stats">
+            <div class="stat">
+                🧠 Memories<br>
+                <b id="memoryCount">0</b>
+            </div>
+
+            <div class="stat">
+                🔗 Connections<br>
+                <b id="connectionCount">0</b>
+            </div>
+
+            <div class="stat">
+                🔍 Curiosity<br>
+                <b id="curiosityLevel">50</b>
+            </div>
+
+            <div class="stat">
+                ⚡ Energy<br>
+                <b id="energyLevel">100</b>
+            </div>
+
+            <div class="stat">
+                😐 Boredom<br>
+                <b id="boredomLevel">0</b>
+            </div>
+
+            <div class="stat">
+                🎯 Focus<br>
+                <b id="focusLevel">50</b>
+            </div>
         </div>
 
     </div>
 
+    <div id="controls" class="panel">
 
-    <div class="section">
+        <div class="sectionTitle">Give AI a goal</div>
 
-        <div class="label">
-            💭 Current Thought
-        </div>
-
-        <div id="thought">
-            ...
-        </div>
-
-    </div>
-
-
-    <div class="section">
-
-        <div class="label">
-            ❓ Current Curiosity
-        </div>
-
-        <div id="curiosity">
-            Nothing yet.
-        </div>
-
-    </div>
-
-
-    <div class="section">
-
-        <div class="label">
-            Give AI a goal
-        </div>
-
-        <input
-            id="goalInput"
-            placeholder="Learn about space"
-        >
+        <input id="goalInput" placeholder="Example: Learn about space">
 
         <button id="goalButton">
-            🎯 Set Goal
+            Set Goal
         </button>
 
-    </div>
+        <div class="sectionTitle">Teach it something</div>
 
+        <input id="memoryInput" placeholder="Something the AI should know">
 
-    <div class="section">
+        <button id="memoryButton">
+            Save Knowledge
+        </button>
 
-        <div class="label">
-            Teach it something
-        </div>
+        <div class="sectionTitle">Manual research</div>
 
-        <input
-            id="researchInput"
-            placeholder="e.g. Jupiter"
-        >
+        <input id="researchInput" placeholder="Topic or question">
 
         <button id="researchButton">
-            🔎 Research
+            Research
         </button>
 
-    </div>
-
-
-    <div class="section">
-
-        <div class="label">
-            🧠 Memory
-        </div>
-
-        <div id="memory"></div>
-
-        <button id="clearMemoryButton">
-            🗑 Clear Memory
-        </button>
-
-    </div>
-
-
-    <div class="section">
-
-        <div class="label">
-            📜 Activity
-        </div>
+        <div class="sectionTitle">Brain activity</div>
 
         <div id="log"></div>
+
+        <button id="clearMemory">
+            Clear Brain
+        </button>
 
     </div>
 
 </div>
 
-
-<button id="hideButton">
-    Hide UI
-</button>
-
-
-<!-- =========================================
-     THREE.JS
-========================================= -->
-
 <script type="module">
 
-import * as THREE
-from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+/* =========================================================
+   BASIC WORLD
+========================================================= */
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x08111f);
+
+const camera = new THREE.PerspectiveCamera(
+    60,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+
+camera.position.set(0, 7, 11);
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
+
+renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, 2)
+);
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+document.getElementById("world").appendChild(renderer.domElement);
 
 
-/* =========================================
-   UI REFERENCES
-========================================= */
+/* LIGHT */
 
-const ui =
-    document.getElementById("ui");
+const ambient = new THREE.AmbientLight(
+    0xffffff,
+    1.4
+);
 
-const status =
-    document.getElementById("status");
+scene.add(ambient);
 
-const goalElement =
-    document.getElementById("goal");
+const sun = new THREE.DirectionalLight(
+    0xffffff,
+    2
+);
+
+sun.position.set(5, 10, 5);
+
+scene.add(sun);
+
+
+/* WATER */
+
+const waterGeometry =
+    new THREE.PlaneGeometry(100, 100);
+
+const waterMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x123a58,
+        roughness: .7
+    });
+
+const water =
+    new THREE.Mesh(
+        waterGeometry,
+        waterMaterial
+    );
+
+water.rotation.x = -Math.PI / 2;
+
+water.position.y = -1;
+
+scene.add(water);
+
+
+/* ISLAND */
+
+const islandGeometry =
+    new THREE.CylinderGeometry(
+        5,
+        6,
+        1.2,
+        32
+    );
+
+const islandMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x376d3b
+    });
+
+const island =
+    new THREE.Mesh(
+        islandGeometry,
+        islandMaterial
+    );
+
+island.position.y = -.35;
+
+scene.add(island);
+
+
+/* =========================================================
+   LITTLE AI CHARACTER
+========================================================= */
+
+const ai = new THREE.Group();
+
+const body =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(0.75, 24, 24),
+        new THREE.MeshStandardMaterial({
+            color: 0x6b7cff
+        })
+    );
+
+body.position.y = .65;
+
+ai.add(body);
+
+
+const eyeMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0xffffff
+    });
+
+const eye1 =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(.12, 12, 12),
+        eyeMaterial
+    );
+
+const eye2 =
+    eye1.clone();
+
+eye1.position.set(-.23, .78, -.65);
+eye2.position.set(.23, .78, -.65);
+
+ai.add(eye1);
+ai.add(eye2);
+
+
+scene.add(ai);
+
+ai.position.set(0, 0, 0);
+
+
+/* =========================================================
+   MEMORY SYSTEM
+========================================================= */
+
+let memory = JSON.parse(
+    localStorage.getItem("littleAI_memory") || "[]"
+);
+
+let researchHistory = JSON.parse(
+    localStorage.getItem("littleAI_research") || "[]"
+);
+
+let curiosityQueue = JSON.parse(
+    localStorage.getItem("littleAI_curiosity") || "[]"
+);
+
+let knowledgeGraph = JSON.parse(
+    localStorage.getItem("littleAI_graph") || "[]"
+);
+
+let goal =
+    localStorage.getItem("littleAI_goal")
+    || "Learn interesting things.";
+
+
+/* =========================================================
+   INTERNAL STATE
+========================================================= */
+
+let brain = {
+
+    curiosity:
+        Number(localStorage.getItem(
+            "littleAI_curiosityLevel"
+        )) || 50,
+
+    energy:
+        Number(localStorage.getItem(
+            "littleAI_energy"
+        )) || 100,
+
+    boredom:
+        Number(localStorage.getItem(
+            "littleAI_boredom"
+        )) || 0,
+
+    focus:
+        Number(localStorage.getItem(
+            "littleAI_focus"
+        )) || 50,
+
+    mood:
+        "curious",
+
+    currentTopic:
+        null
+
+};
+
+
+function saveBrainState() {
+
+    localStorage.setItem(
+        "littleAI_curiosityLevel",
+        Math.round(brain.curiosity)
+    );
+
+    localStorage.setItem(
+        "littleAI_energy",
+        Math.round(brain.energy)
+    );
+
+    localStorage.setItem(
+        "littleAI_boredom",
+        Math.round(brain.boredom)
+    );
+
+    localStorage.setItem(
+        "littleAI_focus",
+        Math.round(brain.focus)
+    );
+}
+
+
+/* =========================================================
+   UI
+========================================================= */
 
 const thoughtElement =
     document.getElementById("thought");
@@ -456,673 +522,335 @@ const thoughtElement =
 const curiosityElement =
     document.getElementById("curiosity");
 
-const memoryElement =
-    document.getElementById("memory");
+const statusElement =
+    document.getElementById("status");
+
+const goalElement =
+    document.getElementById("goal");
 
 const logElement =
     document.getElementById("log");
 
-const goalInput =
-    document.getElementById("goalInput");
-
-const researchInput =
-    document.getElementById("researchInput");
-
-
-/* =========================================
-   3D WORLD
-========================================= */
-
-const scene =
-    new THREE.Scene();
-
-
-scene.background =
-    new THREE.Color(
-        0x87b8d8
-    );
-
-
-/* =========================================
-   CAMERA
-========================================= */
-
-const camera =
-    new THREE.PerspectiveCamera(
-        60,
-
-        window.innerWidth /
-        window.innerHeight,
-
-        0.1,
-
-        1000
-    );
-
-
-camera.position.set(
-    0,
-    7,
-    11
-);
-
-
-camera.lookAt(
-    0,
-    0,
-    0
-);
-
-
-/* =========================================
-   RENDERER
-========================================= */
-
-const renderer =
-    new THREE.WebGLRenderer({
-
-        antialias: true
-
-    });
-
-
-renderer.setPixelRatio(
-    Math.min(
-        window.devicePixelRatio,
-        2
-    )
-);
-
-
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-);
-
-
-document.body.appendChild(
-    renderer.domElement
-);
-
-
-/* =========================================
-   LIGHT
-========================================= */
-
-const sun =
-    new THREE.DirectionalLight(
-        0xffffff,
-        2
-    );
-
-
-sun.position.set(
-    5,
-    10,
-    5
-);
-
-
-scene.add(
-    sun
-);
-
-
-const ambient =
-    new THREE.AmbientLight(
-        0xffffff,
-        0.6
-    );
-
-
-scene.add(
-    ambient
-);
-
-
-/* =========================================
-   WATER
-========================================= */
-
-const water =
-    new THREE.Mesh(
-
-        new THREE.CylinderGeometry(
-            13,
-            13,
-            0.2,
-            64
-        ),
-
-        new THREE.MeshStandardMaterial({
-
-            color:
-                0x3f8fd1
-
-        })
-
-    );
-
-
-water.position.y =
-    -0.9;
-
-
-scene.add(
-    water
-);
-
-
-/* =========================================
-   ISLAND
-========================================= */
-
-const island =
-    new THREE.Mesh(
-
-        new THREE.CylinderGeometry(
-            7,
-            7,
-            1,
-            32
-        ),
-
-        new THREE.MeshStandardMaterial({
-
-            color:
-                0x4d8f50
-
-        })
-
-    );
-
-
-island.position.y =
-    -0.5;
-
-
-scene.add(
-    island
-);
-
-
-/* =========================================
-   LITTLE AI
-========================================= */
-
-const ai =
-    new THREE.Group();
-
-
-/* BODY */
-
-const body =
-    new THREE.Mesh(
-
-        new THREE.BoxGeometry(
-            1,
-            1.2,
-            1
-        ),
-
-        new THREE.MeshStandardMaterial({
-
-            color:
-                0x6c63ff
-
-        })
-
-    );
-
-
-body.position.y =
-    1;
-
-
-ai.add(
-    body
-);
-
-
-/* HEAD */
-
-const head =
-    new THREE.Mesh(
-
-        new THREE.SphereGeometry(
-            0.65,
-            24,
-            24
-        ),
-
-        new THREE.MeshStandardMaterial({
-
-            color:
-                0xe8edf2
-
-        })
-
-    );
-
-
-head.position.y =
-    2;
-
-
-ai.add(
-    head
-);
-
-
-/* EYES */
-
-const eyeMaterial =
-    new THREE.MeshStandardMaterial({
-
-        color:
-            0x111111
-
-    });
-
-
-const eye1 =
-    new THREE.Mesh(
-
-        new THREE.SphereGeometry(
-            0.08,
-            12,
-            12
-        ),
-
-        eyeMaterial
-
-    );
-
-
-eye1.position.set(
-    -0.22,
-    2.05,
-    -0.58
-);
-
-
-ai.add(
-    eye1
-);
-
-
-const eye2 =
-    eye1.clone();
-
-
-eye2.position.x =
-    0.22;
-
-
-ai.add(
-    eye2
-);
-
-
-scene.add(
-    ai
-);
-
-
-/* =========================================
-   MEMORY SYSTEM
-========================================= */
-
-let memory =
-    JSON.parse(
-
-        localStorage.getItem(
-            "littleAI_memory"
-        ) || "[]"
-
-    );
-
-
-function saveMemory(text) {
-
-    memory.push({
-
-        text: text,
-
-        time:
-            new Date()
-            .toLocaleString()
-
-    });
-
-
-    /*
-       Maximum of 100 memories.
-    */
-
-    if (
-        memory.length >
-        100
-    ) {
-
-        memory.shift();
-
-    }
-
-
-    localStorage.setItem(
-
-        "littleAI_memory",
-
-        JSON.stringify(
-            memory
-        )
-
-    );
-
-
-    updateMemoryUI();
-
-
-    /*
-       IMPORTANT:
-
-       Every time the AI learns something,
-       it automatically reflects on it.
-    */
-
-    setTimeout(
-        () => {
-
-            reflectOnKnowledge(
-                text
-            );
-
-        },
-        1200
-    );
-
-}
-
-
-function updateMemoryUI() {
-
-    memoryElement.innerHTML =
-        "";
-
-
-    memory
-        .slice()
-        .reverse()
-        .forEach(
-            item => {
-
-                const element =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                element.className =
-                    "memory-item";
-
-
-                element.textContent =
-                    "• " +
-                    item.text;
-
-
-                memoryElement.appendChild(
-                    element
-                );
-
-            }
-        );
-
-}
-
-
-function clearMemory() {
-
-    memory = [];
-
-
-    localStorage.removeItem(
-        "littleAI_memory"
-    );
-
-
-    updateMemoryUI();
-
-
-    addLog(
-        "🗑 Memory cleared."
-    );
-
-
-    think(
-        "My memories are empty. I need to learn again."
-    );
-
-}
-
-
-/* =========================================
-   GOAL SYSTEM
-========================================= */
-
-let currentGoal =
-    localStorage.getItem(
-        "littleAI_goal"
-    ) ||
-    "Explore the world";
-
-
-goalElement.textContent =
-    currentGoal;
-
-
-document
-    .getElementById(
-        "goalButton"
-    )
-    .addEventListener(
-        "click",
-        setGoal
-    );
-
-
-function setGoal() {
-
-    const value =
-        goalInput.value.trim();
-
-
-    if (!value)
-        return;
-
-
-    currentGoal =
-        value;
-
-
-    localStorage.setItem(
-        "littleAI_goal",
-        currentGoal
-    );
-
-
-    goalElement.textContent =
-        currentGoal;
-
-
-    goalInput.value =
-        "";
-
-
-    think(
-        "My new goal is to " +
-        currentGoal +
-        "."
-    );
-
-
-    addLog(
-        "🎯 New goal: " +
-        currentGoal
-    );
-
-}
-
-
-/* =========================================
-   THOUGHT SYSTEM
-========================================= */
 
 function think(text) {
 
-    thoughtElement.textContent =
-        text;
+    thoughtElement.textContent = text;
 
+    statusElement.textContent =
+        "Thinking • " + brain.mood;
 }
 
 
-/* =========================================
-   LOG
-========================================= */
-
 function addLog(text) {
 
-    const element =
-        document.createElement(
-            "div"
-        );
+    const item =
+        document.createElement("div");
 
+    item.className = "logItem";
 
-    element.className =
-        "log-item";
+    item.textContent =
+        "• " + text;
 
+    logElement.prepend(item);
 
-    element.textContent =
-        "[" +
-        new Date()
-            .toLocaleTimeString() +
-        "] " +
-        text;
-
-
-    logElement.prepend(
-        element
-    );
-
-
-    while (
-        logElement.children.length >
-        40
-    ) {
+    while (logElement.children.length > 40) {
 
         logElement.removeChild(
             logElement.lastChild
         );
 
     }
-
 }
 
 
-/* =========================================
-   CURIOSITY SYSTEM
-========================================= */
+/* =========================================================
+   SAVE MEMORY
+========================================================= */
 
-let curiosityQueue =
-    JSON.parse(
+function saveMemory(text, metadata = {}) {
 
-        localStorage.getItem(
-            "littleAI_curiosity"
-        ) || "[]"
-
-    );
-
-
-function addCuriosity(
-    question,
-    source
-) {
-
-    /*
-       Don't add duplicates.
-    */
-
-    const alreadyExists =
-        curiosityQueue.some(
-
-            item =>
-                item.question ===
-                question
-
-        );
-
-
-    if (alreadyExists)
+    if (!text || text.length < 5)
         return;
 
+    const normalized =
+        text.toLowerCase().trim();
 
-    curiosityQueue.push({
+    const duplicate =
+        memory.some(
+            item =>
+                item.text &&
+                item.text.toLowerCase().trim()
+                === normalized
+        );
 
-        question:
-            question,
+    if (duplicate)
+        return;
+
+    memory.unshift({
+
+        id:
+            Date.now() +
+            Math.random(),
+
+        text,
+
+        topic:
+            metadata.topic || "general",
 
         source:
-            source,
+            metadata.source || "user",
 
-        created:
-            new Date()
-            .toISOString()
+        time:
+            new Date().toISOString()
 
     });
 
+    if (memory.length > 500)
+        memory = memory.slice(0, 500);
 
-    /*
-       Keep queue manageable.
-    */
+    localStorage.setItem(
+        "littleAI_memory",
+        JSON.stringify(memory)
+    );
 
-    if (
-        curiosityQueue.length >
-        50
-    ) {
+    updateStats();
 
-        curiosityQueue.shift();
+    addLog(
+        "Learned: " +
+        shorten(text, 100)
+    );
+
+    buildKnowledgeConnections(text);
+}
+
+
+/* =========================================================
+   KNOWLEDGE GRAPH
+========================================================= */
+
+function extractKeywords(text) {
+
+    const stopWords = new Set([
+
+        "about",
+        "there",
+        "their",
+        "which",
+        "where",
+        "when",
+        "what",
+        "that",
+        "this",
+        "with",
+        "from",
+        "have",
+        "were",
+        "been",
+        "into",
+        "they",
+        "them",
+        "then",
+        "than",
+        "also",
+        "more",
+        "some",
+        "such",
+        "because",
+        "could",
+        "would",
+        "should",
+        "while",
+        "after",
+        "before",
+        "during",
+        "other",
+        "these",
+        "those",
+        "people",
+        "being",
+        "their"
+
+    ]);
+
+    const words =
+        text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, " ")
+        .split(/\s+/)
+        .filter(
+            word =>
+                word.length > 4 &&
+                !stopWords.has(word)
+        );
+
+    const counts = {};
+
+    for (const word of words) {
+
+        counts[word] =
+            (counts[word] || 0) + 1;
 
     }
 
+    return Object.entries(counts)
+        .sort((a,b) => b[1] - a[1])
+        .slice(0, 8)
+        .map(item => item[0]);
+}
+
+
+function buildKnowledgeConnections(text) {
+
+    const keywords =
+        extractKeywords(text);
+
+    for (const keyword of keywords) {
+
+        let node =
+            knowledgeGraph.find(
+                n => n.name === keyword
+            );
+
+        if (!node) {
+
+            node = {
+                name: keyword,
+                connections: [],
+                strength: 0
+            };
+
+            knowledgeGraph.push(node);
+
+        }
+
+        node.strength++;
+
+        for (const other of keywords) {
+
+            if (other === keyword)
+                continue;
+
+            if (!node.connections.includes(other)) {
+
+                node.connections.push(other);
+
+            }
+
+        }
+
+        node.connections =
+            node.connections.slice(0, 30);
+    }
 
     localStorage.setItem(
-
-        "littleAI_curiosity",
-
-        JSON.stringify(
-            curiosityQueue
-        )
-
+        "littleAI_graph",
+        JSON.stringify(knowledgeGraph)
     );
 
+    updateStats();
+}
 
-    updateCuriosityUI();
 
+/* =========================================================
+   GOALS
+========================================================= */
+
+function setGoal(newGoal) {
+
+    if (!newGoal.trim())
+        return;
+
+    goal = newGoal.trim();
+
+    localStorage.setItem(
+        "littleAI_goal",
+        goal
+    );
+
+    goalElement.textContent =
+        goal;
+
+    brain.focus = 80;
+
+    think(
+        "🎯 My new goal is: " +
+        goal
+    );
 
     addLog(
-        "❓ New curiosity: " +
-        question
+        "Goal changed to: " +
+        goal
     );
 
+    addCuriosity(
+        "What should I learn first to achieve my goal?",
+        goal
+    );
+}
+
+
+/* =========================================================
+   CURIOSITY
+========================================================= */
+
+function addCuriosity(question, source = "") {
+
+    if (!question)
+        return;
+
+    question =
+        question
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const normalized =
+        question.toLowerCase();
+
+    const exists =
+        curiosityQueue.some(
+            q =>
+                q.question
+                .toLowerCase()
+                === normalized
+        );
+
+    const alreadyResearched =
+        researchHistory.some(
+            q =>
+                q.toLowerCase()
+                === normalized
+        );
+
+    if (exists || alreadyResearched)
+        return;
+
+    curiosityQueue.push({
+
+        question,
+
+        source,
+
+        created:
+            Date.now()
+
+    });
+
+    if (curiosityQueue.length > 100)
+        curiosityQueue =
+            curiosityQueue.slice(-100);
+
+    localStorage.setItem(
+        "littleAI_curiosity",
+        JSON.stringify(curiosityQueue)
+    );
+
+    updateStats();
 }
 
 
 function updateCuriosityUI() {
 
-    if (
-        curiosityQueue.length === 0
-    ) {
+    if (curiosityQueue.length === 0) {
 
         curiosityElement.textContent =
             "Nothing yet.";
@@ -1131,33 +859,810 @@ function updateCuriosityUI() {
 
     }
 
-
     curiosityElement.textContent =
         curiosityQueue[0].question;
+}
+
+
+/* =========================================================
+   REFLECTION ENGINE
+========================================================= */
+
+function reflectOnKnowledge(text, topic = "") {
+
+    const keywords =
+        extractKeywords(text);
+
+    if (keywords.length === 0)
+        return;
+
+    const main =
+        topic ||
+        keywords[0];
+
+    const thoughts = [
+
+        `I just learned something about ${main}.`,
+
+        `I wonder why ${main} is important.`,
+
+        `I wonder how ${main} works.`,
+
+        `What caused ${main} to become this way?`,
+
+        `What is connected to ${main}?`,
+
+        `What happened before this?`,
+
+        `What happened after this?`,
+
+        `What don't I understand about ${main} yet?`
+
+    ];
+
+    const selected =
+        thoughts[
+            Math.floor(
+                Math.random() *
+                thoughts.length
+            )
+        ];
+
+    think(
+        "💭 " + selected
+    );
+
+    addLog(
+        "Reflection: " +
+        selected
+    );
+
+
+    /*
+       Create multiple future questions.
+    */
+
+    const possibleQuestions = [
+
+        `How does ${main} work?`,
+
+        `Why is ${main} important?`,
+
+        `What is the history of ${main}?`,
+
+        `What is connected to ${main}?`,
+
+        `What are the consequences of ${main}?`,
+
+        `What existed before ${main}?`,
+
+        `What happened after ${main}?`
+
+    ];
+
+
+    /*
+       Randomly choose 1–3.
+    */
+
+    possibleQuestions
+        .sort(() => Math.random() - .5)
+        .slice(0, 2)
+        .forEach(
+            q => addCuriosity(q, main)
+        );
+}
+
+
+/* =========================================================
+   QUESTION -> SEARCH TOPIC
+========================================================= */
+
+function cleanResearchQuestion(question) {
+
+    let query =
+        question
+        .replace(
+            /^(what|why|how|when|where|who|which)\s+/i,
+            ""
+        );
+
+    query =
+        query
+        .replace(
+            /\b(is|are|was|were|does|do|did|can|could|would|should)\b/gi,
+            ""
+        );
+
+    query =
+        query
+        .replace(/\?/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    return query;
+}
+
+
+/* =========================================================
+   WIKIPEDIA SEARCH
+========================================================= */
+
+async function wikipediaSearch(query) {
+
+    const url =
+        "https://en.wikipedia.org/w/api.php?" +
+        "action=query" +
+        "&list=search" +
+        "&srsearch=" +
+        encodeURIComponent(query) +
+        "&format=json" +
+        "&origin=*" +
+        "&srlimit=5";
+
+    const response =
+        await fetch(url);
+
+    if (!response.ok)
+        throw new Error("Wikipedia search failed");
+
+    const data =
+        await response.json();
+
+    if (
+        !data.query ||
+        !data.query.search ||
+        data.query.search.length === 0
+    ) {
+
+        return null;
+
+    }
+
+    return data.query.search[0].title;
+}
+
+
+async function wikipediaSummary(title) {
+
+    const url =
+        "https://en.wikipedia.org/api/rest_v1/page/summary/" +
+        encodeURIComponent(title);
+
+    const response =
+        await fetch(url);
+
+    if (!response.ok)
+        throw new Error("Wikipedia article failed");
+
+    const data =
+        await response.json();
+
+    return data;
+}
+
+
+/* =========================================================
+   RESEARCH ENGINE
+========================================================= */
+
+let researchRunning = false;
+
+
+async function research(question, automatic = false) {
+
+    if (researchRunning)
+        return false;
+
+    researchRunning = true;
+
+    try {
+
+        brain.energy =
+            Math.max(
+                0,
+                brain.energy - 5
+            );
+
+        brain.curiosity =
+            Math.min(
+                100,
+                brain.curiosity + 5
+            );
+
+        brain.mood =
+            "researching";
+
+        statusElement.textContent =
+            "🔎 Researching...";
+
+        think(
+            "🔎 I want to find out: " +
+            question
+        );
+
+        addLog(
+            "Researching: " +
+            question
+        );
+
+
+        const query =
+            cleanResearchQuestion(question);
+
+        const title =
+            await wikipediaSearch(query);
+
+        if (!title) {
+
+            addLog(
+                "I couldn't find a useful article."
+            );
+
+            brain.boredom += 5;
+
+            return false;
+
+        }
+
+
+        /*
+           Avoid endlessly reading the same article.
+        */
+
+        const titleKey =
+            title.toLowerCase();
+
+        const alreadyRead =
+            researchHistory.some(
+                item =>
+                    item === titleKey
+            );
+
+        if (alreadyRead) {
+
+            addLog(
+                "I already researched " +
+                title
+            );
+
+            /*
+               Still create a related curiosity
+               so the brain can branch out.
+            */
+
+            addCuriosity(
+                `What is related to ${title}?`,
+                title
+            );
+
+            return false;
+        }
+
+
+        const article =
+            await wikipediaSummary(title);
+
+        if (!article.extract) {
+
+            addLog(
+                "The article had no useful summary."
+            );
+
+            return false;
+
+        }
+
+
+        researchHistory.push(
+            titleKey
+        );
+
+        if (researchHistory.length > 1000) {
+
+            researchHistory =
+                researchHistory.slice(-1000);
+
+        }
+
+        localStorage.setItem(
+            "littleAI_research",
+            JSON.stringify(researchHistory)
+        );
+
+
+        /*
+           Store actual knowledge.
+        */
+
+        saveMemory(
+            `Research about ${title}: ${article.extract}`,
+            {
+                topic: title,
+                source:
+                    article.content_urls
+                    ?.desktop?.page
+                    || "Wikipedia"
+            }
+        );
+
+
+        brain.currentTopic =
+            title;
+
+        brain.focus =
+            Math.min(
+                100,
+                brain.focus + 10
+            );
+
+        brain.boredom =
+            Math.max(
+                0,
+                brain.boredom - 20
+            );
+
+
+        think(
+            "📚 I learned about " +
+            title +
+            "."
+        );
+
+        addLog(
+            "Read: " +
+            title
+        );
+
+
+        /*
+           Reflection happens after learning.
+        */
+
+        setTimeout(() => {
+
+            reflectOnKnowledge(
+                article.extract,
+                title
+            );
+
+        }, 700);
+
+
+        /*
+           Occasionally branch through
+           another keyword from the article.
+        */
+
+        const keywords =
+            extractKeywords(
+                article.extract
+            );
+
+        if (keywords.length >= 2) {
+
+            const related =
+                keywords[
+                    Math.floor(
+                        Math.random() *
+                        keywords.length
+                    )
+                ];
+
+            addCuriosity(
+                `What is ${related}?`,
+                title
+            );
+
+        }
+
+        return true;
+
+    } catch (error) {
+
+        console.error(error);
+
+        addLog(
+            "Research error: " +
+            error.message
+        );
+
+        brain.mood =
+            "confused";
+
+        return false;
+
+    } finally {
+
+        researchRunning = false;
+
+        saveBrainState();
+
+        updateStats();
+
+    }
+}
+
+
+/* =========================================================
+   AUTONOMOUS RESEARCH
+========================================================= */
+
+let autonomousResearch =
+    true;
+
+
+/*
+   This is the important part.
+
+   The AI does NOT wait for a button.
+
+   It repeatedly:
+
+   1. Looks at its internal state.
+   2. Chooses something interesting.
+   3. Researches it.
+   4. Stores what it learned.
+   5. Reflects on it.
+   6. Creates new questions.
+   7. Researches those questions.
+   8. Repeats.
+*/
+
+
+async function autonomousBrainLoop() {
+
+    if (!autonomousResearch)
+        return;
+
+    if (researchRunning)
+        return;
+
+
+    /*
+       Recharge a little while idle.
+    */
+
+    brain.energy =
+        Math.min(
+            100,
+            brain.energy + 1
+        );
+
+
+    /*
+       Boredom increases if it isn't learning.
+    */
+
+    brain.boredom =
+        Math.min(
+            100,
+            brain.boredom + 1
+        );
+
+
+    /*
+       Boredom creates curiosity.
+    */
+
+    if (
+        brain.boredom > 60 &&
+        curiosityQueue.length < 5
+    ) {
+
+        addCuriosity(
+            "What is something interesting I don't know yet?",
+            "boredom"
+        );
+
+    }
+
+
+    /*
+       If it has no questions,
+       invent one from its knowledge graph.
+    */
+
+    if (curiosityQueue.length === 0) {
+
+        createNewCuriosity();
+
+    }
+
+
+    if (curiosityQueue.length === 0)
+        return;
+
+
+    /*
+       Choose the next question.
+    */
+
+    const next =
+        chooseCuriosity();
+
+    if (!next)
+        return;
+
+
+    /*
+       Remove it from the queue BEFORE researching.
+       This prevents the same question being
+       selected repeatedly if something goes wrong.
+    */
+
+    curiosityQueue =
+        curiosityQueue.filter(
+            item =>
+                item !== next
+        );
+
+    localStorage.setItem(
+        "littleAI_curiosity",
+        JSON.stringify(curiosityQueue)
+    );
+
+
+    think(
+        "🤔 " + next.question
+    );
+
+
+    await research(
+        next.question,
+        true
+    );
+
+
+    /*
+       Small delay before another autonomous
+       thought cycle.
+    */
+
+    updateCuriosityUI();
+    saveBrainState();
 
 }
 
 
-function completeCuriosity() {
+/* =========================================================
+   CURIOSITY SELECTION
+========================================================= */
 
-    if (
-        curiosityQueue.length === 0
-    )
-        return;
+function chooseCuriosity() {
+
+    if (curiosityQueue.length === 0)
+        return null;
 
 
-    curiosityQueue.shift();
+    /*
+       Score each question.
+
+       Questions connected to the current goal
+       receive a boost.
+
+       Older questions receive a boost.
+
+       Randomness prevents the AI from behaving
+       exactly the same every time.
+    */
+
+    const scored =
+        curiosityQueue.map(item => {
+
+            let score =
+                Math.random() * 30;
 
 
-    localStorage.setItem(
+            const age =
+                Date.now() -
+                item.created;
 
-        "littleAI_curiosity",
+            score +=
+                Math.min(
+                    30,
+                    age / 60000
+                );
 
-        JSON.stringify(
-            curiosityQueue
-        )
 
+            if (
+                goal &&
+                item.question
+                    .toLowerCase()
+                    .includes(
+                        goal
+                        .toLowerCase()
+                        .split(" ")[0]
+                    )
+            ) {
+
+                score += 25;
+
+            }
+
+
+            if (
+                item.source ===
+                brain.currentTopic
+            ) {
+
+                score += 15;
+
+            }
+
+
+            return {
+                item,
+                score
+            };
+
+        });
+
+
+    scored.sort(
+        (a,b) =>
+            b.score - a.score
     );
+
+
+    return scored[0].item;
+}
+
+
+/* =========================================================
+   CREATE NEW CURIOSITY
+========================================================= */
+
+function createNewCuriosity() {
+
+    /*
+       First use existing knowledge.
+    */
+
+    if (knowledgeGraph.length > 0) {
+
+        const node =
+            knowledgeGraph[
+                Math.floor(
+                    Math.random() *
+                    knowledgeGraph.length
+                )
+            ];
+
+
+        const questionTypes = [
+
+            `Why is ${node.name} important?`,
+
+            `How does ${node.name} work?`,
+
+            `What is the history of ${node.name}?`,
+
+            `What is connected to ${node.name}?`,
+
+            `What happens because of ${node.name}?`
+
+        ];
+
+
+        addCuriosity(
+            questionTypes[
+                Math.floor(
+                    Math.random() *
+                    questionTypes.length
+                )
+            ],
+            node.name
+        );
+
+        return;
+    }
+
+
+    /*
+       If it knows absolutely nothing,
+       start with a random subject.
+    */
+
+    const starterTopics = [
+
+        "Space",
+
+        "Earth",
+
+        "Animals",
+
+        "History",
+
+        "Science",
+
+        "Computers",
+
+        "Ocean",
+
+        "Dinosaurs",
+
+        "Physics",
+
+        "Plants"
+
+    ];
+
+
+    const topic =
+        starterTopics[
+            Math.floor(
+                Math.random() *
+                starterTopics.length
+            )
+        ];
+
+
+    addCuriosity(
+        `What is ${topic}?`,
+        "starter"
+    );
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+function updateStats() {
+
+    document.getElementById(
+        "memoryCount"
+    ).textContent =
+        memory.length;
+
+
+    let connections = 0;
+
+    knowledgeGraph.forEach(
+        node => {
+            connections +=
+                node.connections.length;
+        }
+    );
+
+
+    document.getElementById(
+        "connectionCount"
+    ).textContent =
+        connections;
+
+
+    document.getElementById(
+        "curiosityLevel"
+    ).textContent =
+        Math.round(
+            brain.curiosity
+        );
+
+
+    document.getElementById(
+        "energyLevel"
+    ).textContent =
+        Math.round(
+            brain.energy
+        );
+
+
+    document.getElementById(
+        "boredomLevel"
+    ).textContent =
+        Math.round(
+            brain.boredom
+        );
+
+
+    document.getElementById(
+        "focusLevel"
+    ).textContent =
+        Math.round(
+            brain.focus
+        );
 
 
     updateCuriosityUI();
@@ -1165,190 +1670,302 @@ function completeCuriosity() {
 }
 
 
-/* =========================================
-   REFLECTION ENGINE
-========================================= */
+/* =========================================================
+   HELPER
+========================================================= */
 
-function shorten(text) {
+function shorten(text, length = 150) {
 
-    if (
-        text.length <= 170
-    )
+    if (text.length <= length)
         return text;
 
-
     return (
-        text.substring(
-            0,
-            170
-        ) +
+        text.substring(0, length) +
         "..."
     );
-
 }
 
 
-function reflectOnKnowledge(
-    knowledge
-) {
+/* =========================================================
+   USER CONTROLS
+========================================================= */
 
-    const clean =
-        knowledge
-            .replace(
-                /^Research about .*?: /i,
-                ""
-            )
-            .trim();
+document
+.getElementById("goalButton")
+.addEventListener("click", () => {
+
+    setGoal(
+        document
+        .getElementById("goalInput")
+        .value
+    );
+
+});
 
 
-    if (!clean)
+document
+.getElementById("memoryButton")
+.addEventListener("click", () => {
+
+    const input =
+        document
+        .getElementById("memoryInput");
+
+    if (!input.value.trim())
+        return;
+
+    saveMemory(
+        input.value,
+        {
+            source: "user"
+        }
+    );
+
+    input.value = "";
+
+    think(
+        "🧠 I will remember that."
+    );
+
+});
+
+
+document
+.getElementById("researchButton")
+.addEventListener("click", async () => {
+
+    const input =
+        document
+        .getElementById("researchInput");
+
+    if (!input.value.trim())
+        return;
+
+    await research(
+        input.value,
+        false
+    );
+
+    input.value = "";
+
+});
+
+
+document
+.getElementById("clearMemory")
+.addEventListener("click", () => {
+
+    if (
+        !confirm(
+            "Clear the AI's entire memory?"
+        )
+    )
+        return;
+
+    memory = [];
+    researchHistory = [];
+    curiosityQueue = [];
+    knowledgeGraph = [];
+
+    localStorage.removeItem(
+        "littleAI_memory"
+    );
+
+    localStorage.removeItem(
+        "littleAI_research"
+    );
+
+    localStorage.removeItem(
+        "littleAI_curiosity"
+    );
+
+    localStorage.removeItem(
+        "littleAI_graph"
+    );
+
+    think(
+        "🧹 My memory has been cleared."
+    );
+
+    addLog(
+        "Brain cleared."
+    );
+
+    updateStats();
+
+});
+
+
+/* =========================================================
+   HIDE UI
+========================================================= */
+
+let uiHidden = false;
+
+document
+.getElementById("hideUI")
+.addEventListener("click", () => {
+
+    uiHidden = !uiHidden;
+
+    document
+        .querySelectorAll(".panel")
+        .forEach(panel => {
+
+            panel.classList.toggle(
+                "hidden",
+                uiHidden
+            );
+
+        });
+
+    document.getElementById(
+        "hideUI"
+    ).textContent =
+        uiHidden
+        ? "Show UI"
+        : "Hide UI";
+
+});
+
+
+/* =========================================================
+   MOBILE CONTROLS
+========================================================= */
+
+document
+.getElementById("brainPanel")
+.addEventListener("click", () => {
+
+    if (
+        window.innerWidth <= 700
+    ) {
+
+        document
+        .getElementById("controls")
+        .classList.toggle(
+            "mobileOpen"
+        );
+
+    }
+
+});
+
+
+/* =========================================================
+   AUTONOMOUS STATE LOOP
+========================================================= */
+
+setInterval(() => {
+
+    /*
+       Curiosity naturally fluctuates.
+    */
+
+    if (Math.random() < .5) {
+
+        brain.curiosity =
+            Math.min(
+                100,
+                brain.curiosity + 1
+            );
+
+    }
+
+
+    /*
+       Focus falls slowly.
+    */
+
+    brain.focus =
+        Math.max(
+            0,
+            brain.focus - .5
+        );
+
+
+    /*
+       If energy is low, let it rest.
+    */
+
+    if (brain.energy < 15) {
+
+        brain.mood =
+            "resting";
+
+        think(
+            "😴 I need a little rest before I continue."
+        );
+
+        brain.energy =
+            Math.min(
+                100,
+                brain.energy + 5
+            );
+
+    }
+
+
+    saveBrainState();
+    updateStats();
+
+}, 5000);
+
+
+/* =========================================================
+   AUTONOMOUS RESEARCH TIMER
+========================================================= */
+
+/*
+   Every 8 seconds the brain gets an opportunity
+   to do something on its own.
+
+   It doesn't necessarily research every time,
+   because it may be resting or thinking.
+*/
+
+setInterval(() => {
+
+    if (
+        brain.energy >= 15 &&
+        !researchRunning
+    ) {
+
+        autonomousBrainLoop();
+
+    }
+
+}, 8000);
+
+
+/* =========================================================
+   AUTONOMOUS THOUGHT TIMER
+========================================================= */
+
+setInterval(() => {
+
+    if (researchRunning)
         return;
 
 
-    const lower =
-        clean.toLowerCase();
+    const thoughts = [
+
+        "I wonder what I should investigate next.",
+
+        "There must be connections between the things I know.",
+
+        "I wonder whether my knowledge is missing something important.",
+
+        "Maybe I should follow one of my existing connections.",
+
+        "I wonder what I would discover if I kept researching.",
+
+        "There is probably something I haven't considered yet."
+
+    ];
 
 
-    const thoughts =
-        [];
-
-
-    /*
-       Basic observation.
-    */
-
-    thoughts.push(
-        "I learned that " +
-        shorten(clean)
-    );
-
-
-    /*
-       Generic curiosity.
-    */
-
-    thoughts.push(
-        "I wonder what causes this."
-    );
-
-
-    thoughts.push(
-        "I wonder what happened before this."
-    );
-
-
-    thoughts.push(
-        "I wonder what happened after this."
-    );
-
-
-    thoughts.push(
-        "What else is connected to this?"
-    );
-
-
-    thoughts.push(
-        "What is something important I still don't know?"
-    );
-
-
-    /*
-       Topic-specific curiosity.
-    */
-
-    if (
-        lower.includes("planet") ||
-        lower.includes("space") ||
-        lower.includes("star") ||
-        lower.includes("galaxy") ||
-        lower.includes("moon")
-    ) {
-
-        thoughts.push(
-            "I wonder how this fits into the rest of the universe."
-        );
-
-        thoughts.push(
-            "I wonder how this formed."
-        );
-
-        thoughts.push(
-            "I wonder what other objects are connected to it."
-        );
-
-    }
-
-
-    if (
-        lower.includes("animal") ||
-        lower.includes("bird") ||
-        lower.includes("species")
-    ) {
-
-        thoughts.push(
-            "I wonder how this species evolved."
-        );
-
-        thoughts.push(
-            "I wonder how it survives in its environment."
-        );
-
-        thoughts.push(
-            "I wonder what animals are related to it."
-        );
-
-    }
-
-
-    if (
-        lower.includes("computer") ||
-        lower.includes("technology") ||
-        lower.includes("software") ||
-        lower.includes("internet")
-    ) {
-
-        thoughts.push(
-            "I wonder how this technology works."
-        );
-
-        thoughts.push(
-            "I wonder what this could be used for."
-        );
-
-        thoughts.push(
-            "I wonder what technology came before it."
-        );
-
-    }
-
-
-    if (
-        lower.includes("history") ||
-        lower.includes("war") ||
-        lower.includes("empire") ||
-        lower.includes("king")
-    ) {
-
-        thoughts.push(
-            "I wonder what caused these events."
-        );
-
-        thoughts.push(
-            "I wonder what happened afterwards."
-        );
-
-        thoughts.push(
-            "I wonder how this affected other people."
-        );
-
-    }
-
-
-    /*
-       Pick an observation.
-    */
-
-    const observation =
+    const thought =
         thoughts[
             Math.floor(
                 Math.random() *
@@ -1358,512 +1975,76 @@ function reflectOnKnowledge(
 
 
     think(
-        "💭 " +
-        observation
+        "💭 " + thought
     );
 
 
-    addLog(
-        "💭 Reflection: " +
-        observation
-    );
+}, 15000);
 
 
-    /*
-       Turn questions into curiosity.
-    */
-
-    const questions =
-        thoughts.filter(
-            item =>
-                item.includes("?")
-        );
-
-
-    /*
-       Add a couple rather than every
-       possible question.
-    */
-
-    const shuffled =
-        questions.sort(
-            () => Math.random() - 0.5
-        );
-
-
-    shuffled
-        .slice(0, 2)
-        .forEach(
-            question => {
-
-                addCuriosity(
-                    question,
-                    clean
-                );
-
-            }
-        );
-
-}
-
-
-/* =========================================
-   WIKIPEDIA RESEARCH
-========================================= */
-
-async function research(
-    topic,
-    automatic = false
-) {
-
-    if (!topic)
-        return;
-
-
-    status.textContent =
-        "🔎 Researching...";
-
-
-    think(
-        automatic
-        ? "I'm curious about this. I'm going to investigate..."
-        : "I'm researching " +
-          topic +
-          "..."
-    );
-
-
-    addLog(
-        automatic
-        ? "🔎 Autonomous research: " +
-          topic
-        : "🔎 Manual research: " +
-          topic
-    );
-
-
-    try {
-
-        /*
-           Wikipedia's public API.
-        */
-
-        const url =
-            "https://en.wikipedia.org/api/rest_v1/page/summary/" +
-
-            encodeURIComponent(
-                topic
-            );
-
-
-        const response =
-            await fetch(
-                url
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "No useful page found."
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        const summary =
-            data.extract;
-
-
-        if (!summary) {
-
-            throw new Error(
-                "The page contained no summary."
-            );
-
-        }
-
-
-        /*
-           Remember the discovery.
-        */
-
-        saveMemory(
-
-            "Research about " +
-            topic +
-            ": " +
-            summary
-
-        );
-
-
-        think(
-            "I learned something new about " +
-            topic +
-            ". Now I'm thinking about it..."
-        );
-
-
-        addLog(
-            "📚 Learned about " +
-            topic
-        );
-
-
-        status.textContent =
-            "🟢 Online";
-
-
-        return true;
-
-
-    } catch (error) {
-
-        status.textContent =
-            "🟠 Research failed";
-
-
-        think(
-            "I couldn't find information about " +
-            topic +
-            ". I'll try something else later."
-        );
-
-
-        addLog(
-            "⚠️ Research failed: " +
-            error.message
-        );
-
-
-        return false;
-
-    }
-
-}
-
-
-/* =========================================
-   MANUAL RESEARCH BUTTON
-========================================= */
-
-document
-    .getElementById(
-        "researchButton"
-    )
-    .addEventListener(
-        "click",
-        async () => {
-
-            const topic =
-                researchInput
-                    .value
-                    .trim();
-
-
-            if (!topic)
-                return;
-
-
-            researchInput.value =
-                "";
-
-
-            await research(
-                topic,
-                false
-            );
-
-        }
-    );
-
-
-/* =========================================
-   AUTONOMOUS CURIOSITY LOOP
-========================================= */
-
-let autonomousResearchRunning =
-    false;
-
-
-async function processCuriosity() {
-
-    /*
-       Don't run two research jobs
-       simultaneously.
-    */
-
-    if (
-        autonomousResearchRunning
-    )
-        return;
-
-
-    /*
-       Nothing to investigate.
-    */
-
-    if (
-        curiosityQueue.length === 0
-    )
-        return;
-
-
-    autonomousResearchRunning =
-        true;
-
-
-    const curiosity =
-        curiosityQueue[0];
-
-
-    updateCuriosityUI();
-
-
-    /*
-       Try to turn the question into
-       a searchable topic.
-
-       Example:
-
-       "I wonder how Jupiter formed."
-
-       becomes:
-
-       "how Jupiter formed"
-    */
-
-    let query =
-        curiosity.question
-            .replace(
-                /^I wonder /i,
-                ""
-            )
-            .replace(
-                /^What is /i,
-                ""
-            )
-            .replace(
-                /^What are /i,
-                ""
-            )
-            .replace(
-                /\?$/,
-                ""
-            )
-            .trim();
-
-
-    /*
-       Wikipedia works better with
-       simple subjects than full questions.
-
-       First try the source information.
-    */
-
-    let topic =
-        extractTopic(
-            curiosity.source
-        );
-
-
-    /*
-       If we can't extract a topic,
-       use the question itself.
-    */
-
-    if (!topic)
-        topic = query;
-
-
-    addLog(
-        "🧠 I decided to investigate: " +
-        topic
-    );
-
-
-    const success =
-        await research(
-            topic,
-            true
-        );
-
-
-    if (success) {
-
-        completeCuriosity();
-
-    } else {
-
-        /*
-           Remove failed curiosity so
-           the AI doesn't get permanently
-           stuck on it.
-        */
-
-        completeCuriosity();
-
-    }
-
-
-    autonomousResearchRunning =
-        false;
-
-}
-
-
-function extractTopic(
-    source
-) {
-
-    if (!source)
-        return "";
-
-
-    /*
-       Try to find a useful first part.
-
-       This isn't an AI model, so it's
-       deliberately simple.
-    */
-
-    const words =
-        source
-            .split(/\s+/)
-            .filter(
-                word =>
-                    word.length > 3
-            );
-
-
-    /*
-       Use the first several meaningful
-       words as a rough search topic.
-    */
-
-    return words
-        .slice(0, 5)
-        .join(" ");
-
-}
-
-
-/* =========================================
-   AUTONOMOUS THOUGHT LOOP
-========================================= */
-
-setInterval(
-    () => {
-
-        if (
-            memory.length === 0
-        ) {
-
-            think(
-                "I don't know anything yet. I should learn something."
-            );
-
-            return;
-
-        }
-
-
-        /*
-           Don't interrupt active research.
-        */
-
-        if (
-            autonomousResearchRunning
-        )
-            return;
-
-
-        /*
-           Reflect on a random memory.
-        */
-
-        const random =
-            memory[
-                Math.floor(
-                    Math.random() *
-                    memory.length
-                )
-            ];
-
-
-        reflectOnKnowledge(
-            random.text
-        );
-
-
-    },
-    15000
-);
-
-
-/* =========================================
-   AUTONOMOUS RESEARCH LOOP
-========================================= */
-
-setInterval(
-    () => {
-
-        processCuriosity();
-
-    },
-    20000
-);
-
-
-/* =========================================
+/* =========================================================
    AI MOVEMENT
-========================================= */
+========================================================= */
 
-let targetX =
-    0;
+let targetX = 0;
+let targetZ = 0;
 
-let targetZ =
-    0;
-
-
-function chooseDestination() {
+function chooseMovementTarget() {
 
     targetX =
-        (Math.random() - 0.5) *
-        9;
-
+        (Math.random() * 7) - 3.5;
 
     targetZ =
-        (Math.random() - 0.5) *
-        9;
-
-
-    addLog(
-        "🚶 I chose somewhere new to explore."
-    );
+        (Math.random() * 7) - 3.5;
 
 }
 
 
-chooseDestination();
+chooseMovementTarget();
+
+setInterval(
+    chooseMovementTarget,
+    5000
+);
 
 
-function moveAI() {
+/* =========================================================
+   ANIMATION
+========================================================= */
+
+const clock =
+    new THREE.Clock();
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+    const time =
+        clock.getElapsedTime();
+
+
+    /*
+       Floating animation.
+    */
+
+    body.position.y =
+        .65 +
+        Math.sin(time * 2) * .08;
+
+
+    /*
+       Move AI around the island.
+    */
 
     const dx =
         targetX -
         ai.position.x;
 
-
     const dz =
         targetZ -
         ai.position.z;
-
 
     const distance =
         Math.sqrt(
@@ -1872,173 +2053,32 @@ function moveAI() {
         );
 
 
-    if (
-        distance < 0.2
-    ) {
+    if (distance > .15) {
 
-        chooseDestination();
+        ai.position.x +=
+            dx * .01;
 
-        return;
+        ai.position.z +=
+            dz * .01;
 
-    }
-
-
-    const speed =
-        0.025;
-
-
-    ai.position.x +=
-        (
-            dx /
-            distance
-        ) *
-        speed;
-
-
-    ai.position.z +=
-        (
-            dz /
-            distance
-        ) *
-        speed;
-
-
-    ai.rotation.y =
-        Math.atan2(
-            dx,
-            dz
-        );
-
-}
-
-
-/* =========================================
-   HIDE UI
-========================================= */
-
-document
-    .getElementById(
-        "hideButton"
-    )
-    .addEventListener(
-        "click",
-        () => {
-
-            ui.classList.toggle(
-                "hidden"
+        ai.rotation.y =
+            Math.atan2(
+                dx,
+                dz
             );
 
-
-            document
-                .getElementById(
-                    "hideButton"
-                )
-                .textContent =
-
-                ui.classList.contains(
-                    "hidden"
-                )
-
-                ? "Show UI"
-
-                : "Hide UI";
-
-        }
-    );
-
-
-/* =========================================
-   RESIZE
-========================================= */
-
-window.addEventListener(
-    "resize",
-    () => {
-
-        camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
-
-
-        camera.updateProjectionMatrix();
-
-
-        renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
-
     }
-);
-
-
-/* =========================================
-   STARTUP
-========================================= */
-
-updateMemoryUI();
-
-updateCuriosityUI();
-
-
-status.textContent =
-    "🟢 Online";
-
-
-think(
-    "I'm awake. I want to discover things."
-);
-
-
-addLog(
-    "🤖 Little AI started."
-);
-
-
-addLog(
-    "🧠 Memory system online."
-);
-
-
-addLog(
-    "💭 Reflection system online."
-);
-
-
-addLog(
-    "❓ Curiosity system online."
-);
-
-
-addLog(
-    "🔎 Autonomous research system online."
-);
-
-
-/* =========================================
-   MAIN LOOP
-========================================= */
-
-function animate() {
-
-    requestAnimationFrame(
-        animate
-    );
-
-
-    moveAI();
 
 
     /*
-       Gentle floating.
+       Camera gently follows the AI.
     */
 
-    ai.position.y =
-        Math.sin(
-            Date.now() *
-            0.003
-        ) *
-        0.08;
+    camera.lookAt(
+        ai.position.x,
+        0,
+        ai.position.z
+    );
 
 
     renderer.render(
@@ -2050,6 +2090,87 @@ function animate() {
 
 
 animate();
+
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+);
+
+
+/* =========================================================
+   STARTUP
+========================================================= */
+
+goalElement.textContent =
+    goal;
+
+updateStats();
+
+addLog(
+    "Brain loaded."
+);
+
+addLog(
+    "Autonomous research is ON."
+);
+
+addLog(
+    "Memory contains " +
+    memory.length +
+    " items."
+);
+
+
+think(
+    "🌱 I am awake. I can research things on my own."
+);
+
+
+/*
+   If the brain has no knowledge,
+   give it a starting curiosity.
+
+   Otherwise, immediately continue from
+   its existing knowledge.
+*/
+
+if (
+    curiosityQueue.length === 0
+) {
+
+    createNewCuriosity();
+
+}
+
+
+/*
+   Start the first autonomous cycle
+   after a short delay.
+*/
+
+setTimeout(() => {
+
+    autonomousBrainLoop();
+
+}, 3000);
 
 </script>
 
