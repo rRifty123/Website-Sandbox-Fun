@@ -4,1838 +4,980 @@
 <meta charset="UTF-8">
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0,
-      maximum-scale=1.0, user-scalable=no">
+               maximum-scale=1.0, user-scalable=no">
 
-<title>AI World</title>
+<title>Little AI</title>
 
 <style>
 * {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
+html,
+body {
     margin: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #080b10;
-    color: white;
     font-family: Arial, sans-serif;
+    background: #10131a;
+    color: white;
 }
 
-/* =========================================================
-   WORLD
-========================================================= */
-
-#world {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-    perspective: 850px;
-
-    background:
-        radial-gradient(
-            circle at 50% 40%,
-            #26364b,
-            #101722 60%,
-            #080b10
-        );
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
-#camera {
-    position: absolute;
-    left: 50%;
-    top: 55%;
-
-    width: 0;
-    height: 0;
-
-    transform-style: preserve-3d;
-
-    transform:
-        translate(-50%, -50%)
-        rotateX(55deg);
-}
-
-#room {
-    position: absolute;
-
-    width: 800px;
-    height: 800px;
-
-    left: -400px;
-    top: -400px;
-
-    transform-style: preserve-3d;
-}
-
-/* =========================================================
-   FLOOR
-========================================================= */
-
-.floor {
-    position: absolute;
-
-    width: 800px;
-    height: 800px;
-
-    transform:
-        rotateX(90deg)
-        translateZ(-100px);
-
-    background-color: #29323f;
-
-    background-image:
-        linear-gradient(
-            rgba(255,255,255,.055) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(255,255,255,.055) 1px,
-            transparent 1px
-        );
-
-    background-size: 50px 50px;
-
-    border: 3px solid #596575;
-}
-
-/* =========================================================
-   WALLS
-========================================================= */
-
-.wall {
-    position: absolute;
-
-    background:
-        linear-gradient(
-            135deg,
-            #29323f,
-            #171d26
-        );
-
-    border: 2px solid #4b5564;
-}
-
-.back-wall {
-    width: 800px;
-    height: 300px;
-
-    transform:
-        translateZ(-400px)
-        translateY(-200px);
-}
-
-.left-wall {
-    width: 800px;
-    height: 300px;
-
-    left: -400px;
-
-    transform:
-        rotateY(90deg)
-        translateZ(-400px)
-        translateY(-200px);
-}
-
-/* =========================================================
-   CEILING LIGHT
-========================================================= */
-
-.ceiling-light {
-    position: absolute;
-
-    width: 180px;
-    height: 90px;
-
-    left: 310px;
-    top: 330px;
-
-    transform:
-        translateZ(100px)
-        rotateX(90deg);
-
-    background: rgba(255,255,255,.12);
-
-    border:
-        3px solid rgba(255,255,255,.25);
-
-    box-shadow:
-        0 0 70px rgba(255,255,255,.18);
-}
-
-/* =========================================================
-   CUBES
-========================================================= */
-
-.object {
-    position: absolute;
-
-    width: 80px;
-    height: 80px;
-
-    transform-style: preserve-3d;
-}
-
-.object-face {
-    position: absolute;
-
-    width: 80px;
-    height: 80px;
-
-    border:
-        2px solid rgba(255,255,255,.25);
-}
-
-.face-front {
-    transform: translateZ(40px);
-}
-
-.face-back {
-    transform:
-        rotateY(180deg)
-        translateZ(40px);
-}
-
-.face-right {
-    transform:
-        rotateY(90deg)
-        translateZ(40px);
-}
-
-.face-left {
-    transform:
-        rotateY(-90deg)
-        translateZ(40px);
-}
-
-.face-top {
-    transform:
-        rotateX(90deg)
-        translateZ(40px);
-}
-
-.face-bottom {
-    transform:
-        rotateX(-90deg)
-        translateZ(40px);
-}
-
-#cube1 {
-    left: 180px;
-    top: 400px;
-
-    transform:
-        translateZ(-20px)
-        rotateY(20deg);
-}
-
-#cube1 .object-face {
-    background: #397ed1;
-}
-
-#cube2 {
-    left: 520px;
-    top: 230px;
-
-    transform:
-        translateZ(-30px)
-        rotateY(-25deg);
-}
-
-#cube2 .object-face {
-    background: #8a4fd1;
-}
-
-#cube3 {
-    left: 100px;
-    top: 150px;
-
-    transform:
-        translateZ(-10px)
-        rotateY(35deg);
-}
-
-#cube3 .object-face {
-    background: #43a765;
-}
-
-#cube4 {
-    left: 550px;
-    top: 500px;
-
-    transform:
-        translateZ(-10px)
-        rotateY(-20deg);
-}
-
-#cube4 .object-face {
-    background: #d58a3d;
-}
-
-/* =========================================================
-   ROBOT
-========================================================= */
-
-#robot {
-    position: absolute;
-
-    width: 90px;
-    height: 150px;
-
-    left: 355px;
-    top: 330px;
-
-    transform-style: preserve-3d;
-
-    transition:
-        left .1s linear,
-        top .1s linear;
-}
-
-.robot-shadow {
-    position: absolute;
-
-    width: 100px;
-    height: 42px;
-
-    left: -5px;
-    top: 115px;
-
-    background: rgba(0,0,0,.35);
-
-    border-radius: 50%;
-
-    transform:
-        rotateX(90deg);
-
-    filter: blur(5px);
-}
-
-.robot-body {
-    position: absolute;
-
-    width: 70px;
-    height: 80px;
-
-    left: 10px;
-    top: 55px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #5aaaff,
-            #2867ad
-        );
-
-    border:
-        3px solid #a9dcff;
-
-    border-radius: 12px;
-
-    transform: translateZ(25px);
-}
-
-.robot-head {
-    position: absolute;
-
-    width: 82px;
-    height: 65px;
-
-    left: 4px;
-    top: 0;
-
-    background:
-        linear-gradient(
-            135deg,
-            #8bd0ff,
-            #4b91cf
-        );
-
-    border:
-        3px solid #c9ecff;
-
-    border-radius: 15px;
-
-    transform: translateZ(25px);
-}
-
-.eye {
-    position: absolute;
-
-    width: 12px;
-    height: 16px;
-
-    top: 22px;
-
-    background: #10151d;
-
-    border-radius: 4px;
-
-    box-shadow:
-        0 0 10px rgba(100,200,255,.7);
-}
-
-.eye.left {
-    left: 20px;
-}
-
-.eye.right {
-    right: 20px;
-}
-
-.antenna {
-    position: absolute;
-
-    width: 5px;
-    height: 25px;
-
-    left: 39px;
-    top: -24px;
-
-    background: #d9e8f5;
-
-    transform: translateZ(25px);
-}
-
-.antenna-ball {
-    position: absolute;
-
-    width: 14px;
-    height: 14px;
-
-    left: 35px;
-    top: -38px;
-
-    border-radius: 50%;
-
-    background: #ff5555;
-
-    box-shadow:
-        0 0 15px rgba(255,80,80,.7);
-
-    transform: translateZ(25px);
-}
-
-.arm {
-    position: absolute;
-
-    width: 15px;
-    height: 60px;
-
-    top: 65px;
-
-    background: #4b8fca;
-
-    border-radius: 10px;
-
-    transform-origin: top center;
-
-    transform:
-        translateZ(25px);
-}
-
-.arm.left {
-    left: -7px;
-    transform:
-        rotateZ(12deg)
-        translateZ(25px);
-}
-
-.arm.right {
-    right: -7px;
-    transform:
-        rotateZ(-12deg)
-        translateZ(25px);
-}
-
-/* =========================================================
-   UI
-========================================================= */
+/* ---------------- UI ---------------- */
 
 #ui {
     position: fixed;
-    inset: 0;
+    z-index: 10;
 
-    z-index: 100;
+    top: 10px;
+    left: 10px;
 
-    pointer-events: none;
-
-    transition:
-        opacity .25s;
-}
-
-#ui.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* All panels */
-
-.panel {
-    position: absolute;
-
-    pointer-events: auto;
-
-    background:
-        rgba(10,14,21,.94);
-
-    border:
-        1px solid rgba(255,255,255,.16);
-
-    border-radius: 14px;
-
-    padding: 12px;
-
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-
-    box-shadow:
-        0 8px 30px rgba(0,0,0,.4);
-}
-
-/* =========================================================
-   TOP CONTROLS
-========================================================= */
-
-#controls {
-    top: 12px;
-    left: 12px;
-
-    width: 210px;
-}
-
-#controls h2 {
-    margin: 0 0 3px;
-    font-size: 18px;
-}
-
-.status {
-    font-size: 11px;
-    opacity: .6;
-}
-
-button {
-    border: 0;
-
-    border-radius: 9px;
-
-    padding: 9px 11px;
-
-    margin-top: 6px;
-
-    color: white;
-
-    background: #287df5;
-
-    font-weight: bold;
-
-    font-size: 13px;
-}
-
-button:active {
-    transform: scale(.96);
-}
-
-button.secondary {
-    background: #353d4a;
-}
-
-button.danger {
-    background: #b83b4c;
-}
-
-/* =========================================================
-   HIDE BUTTON
-========================================================= */
-
-#hideButton {
-    position: fixed;
-
-    right: 12px;
-    top: 12px;
-
-    z-index: 200;
-
-    width: 48px;
-    height: 48px;
-
-    padding: 0;
-
-    margin: 0;
-
-    border-radius: 50%;
-
-    background:
-        rgba(15,20,29,.9);
-
-    border:
-        1px solid rgba(255,255,255,.2);
-
-    font-size: 20px;
-
-    pointer-events: auto;
-}
-
-/* Floating button when UI is hidden */
-
-#showButton {
-    display: none;
-
-    position: fixed;
-
-    right: 12px;
-    top: 12px;
-
-    z-index: 300;
-
-    width: 48px;
-    height: 48px;
-
-    border-radius: 50%;
-
-    padding: 0;
-    margin: 0;
-
-    background:
-        rgba(15,20,29,.9);
-
-    border:
-        1px solid rgba(255,255,255,.2);
-
-    font-size: 20px;
-}
-
-body.ui-hidden #ui {
-    display: none;
-}
-
-body.ui-hidden #showButton {
-    display: block;
-}
-
-/* =========================================================
-   THOUGHT
-========================================================= */
-
-#thought {
-    left: 50%;
-    top: 12px;
-
-    transform:
-        translateX(-50%);
-
-    width:
-        min(420px, 42vw);
-
-    text-align: center;
-
-    font-size: 13px;
-}
-
-/* =========================================================
-   TEACH / MEMORY BUTTONS
-========================================================= */
-
-#quickButtons {
-    left: 12px;
-    bottom: 12px;
-
-    display: flex;
-
-    gap: 6px;
-
-    padding: 8px;
-}
-
-#quickButtons button {
-    margin: 0;
-}
-
-/* =========================================================
-   POPUP
-========================================================= */
-
-.modal {
-    display: none;
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 250;
-
-    background:
-        rgba(0,0,0,.65);
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 15px;
-}
-
-.modal.open {
-    display: flex;
-}
-
-.modal-box {
-    width:
-        min(500px, 100%);
-
-    max-height:
-        85vh;
+    width: min(340px, calc(100vw - 20px));
+    max-height: calc(100vh - 20px);
 
     overflow-y: auto;
 
-    background:
-        #111720;
-
-    border:
-        1px solid #46505e;
+    padding: 14px;
 
     border-radius: 16px;
 
-    padding: 16px;
+    background: rgba(10, 12, 18, 0.88);
 
-    box-shadow:
-        0 20px 70px rgba(0,0,0,.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
-.modal-box h2 {
-    margin-top: 0;
+h1 {
+    margin: 0;
+    font-size: 22px;
 }
 
-textarea {
-    width: 100%;
+#status {
+    margin-top: 4px;
+    color: #9aa5b1;
+    font-size: 13px;
+}
 
-    min-height: 110px;
+.section {
+    margin-top: 14px;
+    padding-top: 12px;
 
-    padding: 10px;
+    border-top: 1px solid #303744;
+}
 
-    resize: vertical;
+.label {
+    margin-bottom: 5px;
 
-    border-radius: 9px;
-
-    border:
-        1px solid #424b59;
-
-    background: #181d26;
-
-    color: white;
-
-    font-size: 14px;
-
-    outline: none;
+    color: #9aa5b1;
+    font-size: 12px;
 }
 
 input {
     width: 100%;
 
-    padding: 9px;
+    padding: 11px;
 
-    margin-bottom: 8px;
+    border: 0;
+    outline: none;
 
-    border-radius: 9px;
+    border-radius: 10px;
 
-    border:
-        1px solid #424b59;
+    background: #202631;
+    color: white;
+
+    font-size: 14px;
+}
+
+button {
+    width: 100%;
+
+    padding: 11px;
+    margin-top: 7px;
+
+    border: 0;
+    border-radius: 10px;
+
+    background: #303949;
+    color: white;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+#thought {
+    min-height: 55px;
+
+    padding: 10px;
+
+    border-radius: 10px;
 
     background: #181d26;
 
-    color: white;
-
-    outline: none;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
-/* =========================================================
-   MEMORIES
-========================================================= */
+#goal {
+    padding: 8px;
 
-.memory {
-    padding: 10px;
+    border-radius: 8px;
 
-    margin-top: 7px;
-
-    background: #1c232e;
-
-    border-radius: 9px;
+    background: #181d26;
 
     font-size: 13px;
-
-    word-break: break-word;
 }
 
-.memory button {
-    font-size: 11px;
-    padding: 6px 8px;
-}
-
-.small {
-    font-size: 11px;
-    opacity: .6;
-}
-
-/* =========================================================
-   ACTIVITY
-========================================================= */
-
-#activityList {
-    max-height: 300px;
+#memory {
+    max-height: 130px;
 
     overflow-y: auto;
+
+    font-size: 12px;
 }
 
-.log {
+.memory-item {
     padding: 6px 0;
+
+    border-bottom: 1px solid #292f39;
+
+    color: #c5ccd5;
+}
+
+#log {
+    max-height: 150px;
+
+    overflow-y: auto;
 
     font-size: 11px;
 
-    border-bottom:
-        1px solid rgba(255,255,255,.07);
-
-    opacity: .85;
+    color: #aeb7c3;
 }
 
-/* =========================================================
-   MOBILE LAYOUT
-========================================================= */
-
-@media(max-width:600px) {
-
-    #controls {
-        width: auto;
-
-        left: 10px;
-        top: 10px;
-
-        padding: 8px;
-    }
-
-    #controls h2 {
-        font-size: 15px;
-    }
-
-    #controls .status {
-        display: none;
-    }
-
-    #controls button {
-        font-size: 11px;
-        padding: 8px;
-    }
-
-    #thought {
-        top: 72px;
-
-        width: calc(100vw - 120px);
-
-        font-size: 11px;
-
-        padding: 8px;
-    }
-
-    #quickButtons {
-        bottom: 10px;
-        left: 10px;
-
-        padding: 6px;
-    }
-
-    #quickButtons button {
-        font-size: 11px;
-        padding: 8px;
-    }
-
-    #hideButton,
-    #showButton {
-        width: 44px;
-        height: 44px;
-    }
-
-    .modal {
-        padding: 8px;
-    }
-
-    .modal-box {
-        max-height: 90vh;
-        padding: 14px;
-    }
-
+.log-item {
+    margin-bottom: 6px;
 }
 
-/* Very small phones */
+#hideButton {
+    position: fixed;
 
-@media(max-width:390px) {
+    z-index: 20;
 
-    #controls {
-        transform: scale(.9);
-        transform-origin: top left;
-    }
+    top: 10px;
+    right: 10px;
 
-    #thought {
-        top: 65px;
-        width: 45vw;
-    }
+    width: auto;
 
-    #quickButtons {
-        transform: scale(.9);
-        transform-origin: bottom left;
-    }
+    padding: 9px 12px;
 
+    margin: 0;
 }
 
+.hidden {
+    display: none !important;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+
+    #ui {
+        width: calc(100vw - 20px);
+        max-height: 55vh;
+
+        padding: 12px;
+    }
+
+    h1 {
+        font-size: 19px;
+    }
+
+    button,
+    input {
+        font-size: 16px;
+    }
+}
 </style>
 </head>
 
 <body>
 
-<!-- =======================================================
-     3D WORLD
-======================================================= -->
-
-<div id="world">
-
-    <div id="camera">
-
-        <div id="room">
-
-            <div class="floor"></div>
-
-            <div class="wall back-wall"></div>
-
-            <div class="wall left-wall"></div>
-
-            <div class="ceiling-light"></div>
-
-
-            <!-- BLUE CUBE -->
-
-            <div class="object" id="cube1">
-
-                <div class="object-face face-front"></div>
-                <div class="object-face face-back"></div>
-                <div class="object-face face-right"></div>
-                <div class="object-face face-left"></div>
-                <div class="object-face face-top"></div>
-                <div class="object-face face-bottom"></div>
-
-            </div>
-
-
-            <!-- PURPLE CUBE -->
-
-            <div class="object" id="cube2">
-
-                <div class="object-face face-front"></div>
-                <div class="object-face face-back"></div>
-                <div class="object-face face-right"></div>
-                <div class="object-face face-left"></div>
-                <div class="object-face face-top"></div>
-                <div class="object-face face-bottom"></div>
-
-            </div>
-
-
-            <!-- GREEN CUBE -->
-
-            <div class="object" id="cube3">
-
-                <div class="object-face face-front"></div>
-                <div class="object-face face-back"></div>
-                <div class="object-face face-right"></div>
-                <div class="object-face face-left"></div>
-                <div class="object-face face-top"></div>
-                <div class="object-face face-bottom"></div>
-
-            </div>
-
-
-            <!-- ORANGE CUBE -->
-
-            <div class="object" id="cube4">
-
-                <div class="object-face face-front"></div>
-                <div class="object-face face-back"></div>
-                <div class="object-face face-right"></div>
-                <div class="object-face face-left"></div>
-                <div class="object-face face-top"></div>
-                <div class="object-face face-bottom"></div>
-
-            </div>
-
-
-            <!-- ROBOT -->
-
-            <div id="robot">
-
-                <div class="robot-shadow"></div>
-
-                <div class="robot-body"></div>
-
-                <div class="robot-head">
-
-                    <div class="eye left"></div>
-                    <div class="eye right"></div>
-
-                </div>
-
-                <div class="antenna"></div>
-
-                <div class="antenna-ball"></div>
-
-                <div class="arm left"></div>
-
-                <div class="arm right"></div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<!-- =======================================================
-     UI
-======================================================= -->
+<!-- ==============================
+     INTERFACE
+================================ -->
 
 <div id="ui">
 
-    <div id="controls" class="panel">
+    <h1>🤖 Little AI</h1>
 
-        <h2>🤖 AI World</h2>
+    <div id="status">
+        Starting AI...
+    </div>
 
-        <div class="status">
-            Autonomous AI experiment
+
+    <div class="section">
+
+        <div class="label">
+            Current goal
         </div>
 
-        <button
-            id="pauseButton"
-            onclick="toggleAI()">
-            ⏸ Pause
-        </button>
+        <div id="goal">
+            Explore the world
+        </div>
 
-        <button
-            class="secondary"
-            onclick="makeThought()">
-            💡 Think
+    </div>
+
+
+    <div class="section">
+
+        <div class="label">
+            Current thought
+        </div>
+
+        <div id="thought">
+            ...
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <div class="label">
+            Give AI a goal
+        </div>
+
+        <input
+            id="goalInput"
+            placeholder="Learn about space"
+        >
+
+        <button id="goalButton">
+            🎯 Set Goal
         </button>
 
     </div>
 
 
-    <div id="thought" class="panel">
+    <div class="section">
 
-        💭 Waiting for a thought...
+        <div class="label">
+            Research something
+        </div>
 
-    </div>
+        <input
+            id="researchInput"
+            placeholder="e.g. Jupiter"
+        >
 
-
-    <div id="quickButtons" class="panel">
-
-        <button
-            onclick="openModal('teachModal')">
-            🧠 Teach
-        </button>
-
-        <button
-            onclick="openModal('memoryModal')">
-            📚 Memory
-        </button>
-
-        <button
-            onclick="openModal('activityModal')">
-            📜 Activity
+        <button id="researchButton">
+            🔎 Research
         </button>
 
     </div>
 
 
-    <button
-        id="hideButton"
-        onclick="hideUI()">
+    <div class="section">
 
-        👁️
+        <div class="label">
+            Memory
+        </div>
 
-    </button>
+        <div id="memory"></div>
+
+        <button id="clearMemoryButton">
+            🗑 Clear Memory
+        </button>
+
+    </div>
+
+
+    <div class="section">
+
+        <div class="label">
+            Activity
+        </div>
+
+        <div id="log"></div>
+
+    </div>
 
 </div>
 
 
-<button
-    id="showButton"
-    onclick="showUI()">
-
-    ☰
-
+<button id="hideButton">
+    Hide UI
 </button>
 
 
-<!-- =======================================================
-     TEACH MODAL
-======================================================= -->
+<!--
+=========================================================
+THREE.JS
 
-<div
-    id="teachModal"
-    class="modal">
+IMPORTANT:
+We are NOT using:
 
-    <div class="modal-box">
+    THREE.Scene()
 
-        <h2>🧠 Teach the AI</h2>
+from a normal script.
 
-        <div class="small">
-            Anything you teach it will be saved on this device.
-        </div>
+Instead we import Three.js as an ES module below.
+=========================================================
+-->
 
-        <textarea
-            id="newMemory"
-            placeholder="Example: My favourite game is Geometry Dash."
-        ></textarea>
+<script type="module">
 
-        <button onclick="teachAI()">
-            🧠 Save Memory
-        </button>
+import * as THREE
+    from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
-        <button
-            class="secondary"
-            onclick="closeModal('teachModal')">
-            Close
-        </button>
 
-    </div>
+/* =====================================================
+   UI REFERENCES
+===================================================== */
 
-</div>
+const ui =
+    document.getElementById("ui");
 
+const status =
+    document.getElementById("status");
 
-<!-- =======================================================
-     MEMORY MODAL
-======================================================= -->
+const goalElement =
+    document.getElementById("goal");
 
-<div
-    id="memoryModal"
-    class="modal">
+const thoughtElement =
+    document.getElementById("thought");
 
-    <div class="modal-box">
+const memoryElement =
+    document.getElementById("memory");
 
-        <h2>📚 AI Memory</h2>
+const logElement =
+    document.getElementById("log");
 
-        <div class="small">
-            These memories are stored locally on your device.
-        </div>
+const goalInput =
+    document.getElementById("goalInput");
 
-        <br>
+const researchInput =
+    document.getElementById("researchInput");
 
-        <input
-            id="searchMemory"
-            placeholder="Search memories..."
-            oninput="displayMemories()"
-        >
 
-        <div id="memoryList"></div>
+/* =====================================================
+   3D SCENE
+===================================================== */
 
-        <br>
+const scene =
+    new THREE.Scene();
 
-        <button onclick="exportMemory()">
-            📤 Export
-        </button>
 
-        <button
-            class="secondary"
-            onclick="document.getElementById('importFile').click()">
-            📥 Import
-        </button>
+scene.background =
+    new THREE.Color(0x87b8d8);
 
-        <input
-            id="importFile"
-            type="file"
-            accept=".json"
-            style="display:none"
-            onchange="importMemory(event)"
-        >
 
-        <br>
+/* =====================================================
+   CAMERA
+===================================================== */
 
-        <button
-            class="danger"
-            onclick="forgetEverything()">
-            🗑 Forget Everything
-        </button>
+const camera =
+    new THREE.PerspectiveCamera(
+        60,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        1000
+    );
 
-        <button
-            class="secondary"
-            onclick="closeModal('memoryModal')">
-            Close
-        </button>
 
-    </div>
+camera.position.set(
+    0,
+    7,
+    11
+);
 
-</div>
 
+camera.lookAt(
+    0,
+    0,
+    0
+);
 
-<!-- =======================================================
-     ACTIVITY MODAL
-======================================================= -->
 
-<div
-    id="activityModal"
-    class="modal">
+/* =====================================================
+   RENDERER
+===================================================== */
 
-    <div class="modal-box">
-
-        <h2>📜 Activity</h2>
-
-        <div id="activityList"></div>
-
-        <button
-            class="secondary"
-            onclick="clearLog()">
-            Clear
-        </button>
-
-        <button
-            class="secondary"
-            onclick="closeModal('activityModal')">
-            Close
-        </button>
-
-    </div>
-
-</div>
-
-
-<script>
-
-/* =========================================================
-   MEMORY
-========================================================= */
-
-const MEMORY_KEY =
-    "AI_WORLD_MEMORY_MOBILE_V1";
-
-let memories = [];
-
-
-try {
-
-    memories =
-        JSON.parse(
-            localStorage.getItem(
-                MEMORY_KEY
-            )
-        ) || [];
-
-} catch {
-
-    memories = [];
-
-}
-
-
-function saveMemories() {
-
-    try {
-
-        localStorage.setItem(
-            MEMORY_KEY,
-            JSON.stringify(memories)
-        );
-
-    } catch {
-
-        alert(
-            "The browser could not save the memory."
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   TEACH
-========================================================= */
-
-function teachAI() {
-
-    const input =
-        document.getElementById(
-            "newMemory"
-        );
-
-    const text =
-        input.value.trim();
-
-    if (!text) return;
-
-
-    memories.push({
-
-        id: Date.now(),
-
-        text: text,
-
-        created:
-            new Date().toISOString()
-
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true
     });
 
 
-    saveMemories();
+renderer.setPixelRatio(
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
+);
 
-    input.value = "";
 
-    displayMemories();
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
 
-    closeModal(
-        "teachModal"
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+
+/* =====================================================
+   LIGHTING
+===================================================== */
+
+const sunlight =
+    new THREE.DirectionalLight(
+        0xffffff,
+        2
     );
 
 
-    showThought(
-        "I learned something new: " +
-        text
+sunlight.position.set(
+    5,
+    10,
+    5
+);
+
+
+scene.add(
+    sunlight
+);
+
+
+const ambientLight =
+    new THREE.AmbientLight(
+        0xffffff,
+        0.6
     );
 
 
-    logActivity(
-        "🧠 Learned: " +
-        text
-    );
-
-}
-
-
-/* =========================================================
-   MEMORY DISPLAY
-========================================================= */
-
-function displayMemories() {
-
-    const list =
-        document.getElementById(
-            "memoryList"
-        );
-
-    const search =
-        document.getElementById(
-            "searchMemory"
-        ).value.toLowerCase();
-
-
-    list.innerHTML = "";
-
-
-    const filtered =
-        memories.filter(
-            memory =>
-                memory.text
-                .toLowerCase()
-                .includes(search)
-        );
-
-
-    if (
-        filtered.length === 0
-    ) {
-
-        list.innerHTML =
-            '<div class="small">No memories found.</div>';
-
-        return;
-
-    }
-
-
-    filtered
-        .slice()
-        .reverse()
-        .forEach(memory => {
-
-            const box =
-                document.createElement(
-                    "div"
-                );
-
-            box.className =
-                "memory";
-
-
-            const text =
-                document.createElement(
-                    "div"
-                );
-
-            text.textContent =
-                memory.text;
-
-
-            const button =
-                document.createElement(
-                    "button"
-                );
-
-            button.textContent =
-                "Forget";
-
-
-            button.className =
-                "danger";
-
-
-            button.onclick =
-                function() {
-
-                    forgetMemory(
-                        memory.id
-                    );
-
-                };
-
-
-            box.appendChild(text);
-
-            box.appendChild(button);
-
-            list.appendChild(box);
-
-        });
-
-}
-
-
-/* =========================================================
-   FORGET
-========================================================= */
-
-function forgetMemory(id) {
-
-    memories =
-        memories.filter(
-            memory =>
-                memory.id !== id
-        );
-
-    saveMemories();
-
-    displayMemories();
-
-    logActivity(
-        "🗑️ Forgot a memory."
-    );
-
-}
-
-
-function forgetEverything() {
-
-    if (
-        !confirm(
-            "Forget every memory?"
-        )
-    ) return;
-
-
-    memories = [];
-
-    saveMemories();
-
-    displayMemories();
-
-    showThought(
-        "I have forgotten everything."
-    );
-
-    logActivity(
-        "🗑️ All memories erased."
-    );
-
-}
-
-
-/* =========================================================
-   IMPORT / EXPORT
-========================================================= */
-
-function exportMemory() {
-
-    const data =
-        JSON.stringify(
-            memories,
-            null,
-            2
-        );
-
-
-    const blob =
-        new Blob(
-            [data],
-            {
-                type:
-                    "application/json"
-            }
-        );
-
-
-    const url =
-        URL.createObjectURL(
-            blob
-        );
-
-
-    const link =
-        document.createElement(
-            "a"
-        );
-
-
-    link.href = url;
-
-    link.download =
-        "AI-Memory.json";
-
-
-    link.click();
-
-    URL.revokeObjectURL(
-        url
+scene.add(
+    ambientLight
+);
+
+
+/* =====================================================
+   WATER
+===================================================== */
+
+const waterGeometry =
+    new THREE.CylinderGeometry(
+        13,
+        13,
+        0.2,
+        64
     );
 
 
-    logActivity(
-        "📤 Memory exported."
-    );
-
-}
-
-
-function importMemory(event) {
-
-    const file =
-        event.target.files[0];
-
-    if (!file) return;
+const waterMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x3f8fd1
+    });
 
 
-    const reader =
-        new FileReader();
-
-
-    reader.onload =
-        function(e) {
-
-            try {
-
-                const imported =
-                    JSON.parse(
-                        e.target.result
-                    );
-
-
-                if (
-                    !Array.isArray(
-                        imported
-                    )
-                ) {
-
-                    throw new Error();
-
-                }
-
-
-                memories =
-                    imported;
-
-
-                saveMemories();
-
-                displayMemories();
-
-
-                logActivity(
-                    "📥 Memory imported."
-                );
-
-
-            } catch {
-
-                alert(
-                    "Invalid memory file."
-                );
-
-            }
-
-        };
-
-
-    reader.readAsText(file);
-
-}
-
-
-/* =========================================================
-   THOUGHTS
-========================================================= */
-
-const basicThoughts = [
-
-    "I wonder what is around me.",
-
-    "I should explore somewhere new.",
-
-    "I wonder what I could discover.",
-
-    "There are still things I don't understand.",
-
-    "I wonder what I should investigate next."
-
-];
-
-
-function makeThought() {
-
-    let thought;
-
-
-    if (
-        memories.length === 0
-    ) {
-
-        thought =
-            basicThoughts[
-                Math.floor(
-                    Math.random() *
-                    basicThoughts.length
-                )
-            ];
-
-    } else {
-
-        const memory =
-            memories[
-                Math.floor(
-                    Math.random() *
-                    memories.length
-                )
-            ];
-
-
-        const choices = [
-
-            "I remember that " +
-            memory.text,
-
-            "I'm thinking about something I learned: " +
-            memory.text,
-
-            "That reminds me of this: " +
-            memory.text,
-
-            "I wonder how this relates to my world: " +
-            memory.text,
-
-            "I should keep this in mind: " +
-            memory.text
-
-        ];
-
-
-        thought =
-            choices[
-                Math.floor(
-                    Math.random() *
-                    choices.length
-                )
-            ];
-
-    }
-
-
-    showThought(
-        thought
+const water =
+    new THREE.Mesh(
+        waterGeometry,
+        waterMaterial
     );
 
 
-    logActivity(
-        "💭 " +
-        thought
+water.position.y =
+    -0.9;
+
+
+scene.add(
+    water
+);
+
+
+/* =====================================================
+   ISLAND
+===================================================== */
+
+const islandGeometry =
+    new THREE.CylinderGeometry(
+        7,
+        7,
+        1,
+        32
     );
 
-}
+
+const islandMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x4d8f50
+    });
 
 
-function showThought(text) {
-
-    document.getElementById(
-        "thought"
-    ).textContent =
-        "💭 " + text;
-
-}
+const island =
+    new THREE.Mesh(
+        islandGeometry,
+        islandMaterial
+    );
 
 
-/* =========================================================
-   ACTIVITY
-========================================================= */
-
-let activity = [];
+island.position.y =
+    -0.5;
 
 
-function logActivity(text) {
+scene.add(
+    island
+);
 
-    activity.unshift({
+
+/* =====================================================
+   AI CHARACTER
+===================================================== */
+
+const ai =
+    new THREE.Group();
+
+
+/* BODY */
+
+const body =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1,
+            1.2,
+            1
+        ),
+
+        new THREE.MeshStandardMaterial({
+            color: 0x6c63ff
+        })
+    );
+
+
+body.position.y =
+    1;
+
+
+ai.add(
+    body
+);
+
+
+/* HEAD */
+
+const head =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            0.65,
+            24,
+            24
+        ),
+
+        new THREE.MeshStandardMaterial({
+            color: 0xe8edf2
+        })
+    );
+
+
+head.position.y =
+    2;
+
+
+ai.add(
+    head
+);
+
+
+/* EYES */
+
+const eyeMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x111111
+    });
+
+
+const eye1 =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            0.08,
+            12,
+            12
+        ),
+
+        eyeMaterial
+    );
+
+
+eye1.position.set(
+    -0.22,
+    2.05,
+    -0.58
+);
+
+
+ai.add(
+    eye1
+);
+
+
+const eye2 =
+    eye1.clone();
+
+
+eye2.position.x =
+    0.22;
+
+
+ai.add(
+    eye2
+);
+
+
+/* ADD AI */
+
+ai.position.set(
+    0,
+    0,
+    0
+);
+
+
+scene.add(
+    ai
+);
+
+
+/* =====================================================
+   MEMORY
+===================================================== */
+
+let memory =
+    JSON.parse(
+        localStorage.getItem(
+            "littleAI_memory"
+        ) || "[]"
+    );
+
+
+function saveMemory(text) {
+
+    memory.push({
 
         text: text,
 
         time:
             new Date()
-            .toLocaleTimeString()
+            .toLocaleString()
 
     });
 
 
-    activity =
-        activity.slice(
-            0,
-            50
-        );
+    if (memory.length > 100) {
+
+        memory.shift();
+
+    }
 
 
-    displayActivity();
+    localStorage.setItem(
+        "littleAI_memory",
+        JSON.stringify(memory)
+    );
 
+
+    updateMemoryUI();
 }
 
 
-function displayActivity() {
+function updateMemoryUI() {
 
-    const list =
-        document.getElementById(
-            "activityList"
-        );
+    memoryElement.innerHTML =
+        "";
 
 
-    list.innerHTML = "";
+    memory
+        .slice()
+        .reverse()
+        .forEach(item => {
+
+            const element =
+                document.createElement(
+                    "div"
+                );
 
 
-    activity.forEach(item => {
+            element.className =
+                "memory-item";
 
-        const div =
-            document.createElement(
-                "div"
+
+            element.textContent =
+                "• " +
+                item.text;
+
+
+            memoryElement.appendChild(
+                element
             );
 
-        div.className =
-            "log";
+        });
+}
 
-        div.textContent =
-            item.time +
-            "  " +
-            item.text;
 
-        list.appendChild(
-            div
+/* =====================================================
+   CLEAR MEMORY
+===================================================== */
+
+document
+    .getElementById(
+        "clearMemoryButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            memory = [];
+
+            localStorage.removeItem(
+                "littleAI_memory"
+            );
+
+            updateMemoryUI();
+
+            addLog(
+                "Memory cleared."
+            );
+
+        }
+    );
+
+
+/* =====================================================
+   GOALS
+===================================================== */
+
+let currentGoal =
+    localStorage.getItem(
+        "littleAI_goal"
+    ) ||
+    "Explore the world";
+
+
+goalElement.textContent =
+    currentGoal;
+
+
+document
+    .getElementById(
+        "goalButton"
+    )
+    .addEventListener(
+        "click",
+        setGoal
+    );
+
+
+function setGoal() {
+
+    const value =
+        goalInput
+            .value
+            .trim();
+
+
+    if (!value)
+        return;
+
+
+    currentGoal =
+        value;
+
+
+    localStorage.setItem(
+        "littleAI_goal",
+        currentGoal
+    );
+
+
+    goalElement.textContent =
+        currentGoal;
+
+
+    goalInput.value =
+        "";
+
+
+    think(
+        "My goal is now: " +
+        currentGoal
+    );
+
+
+    addLog(
+        "New goal: " +
+        currentGoal
+    );
+
+}
+
+
+/* =====================================================
+   THOUGHT SYSTEM
+===================================================== */
+
+const thoughts = [
+
+    "I wonder what is around here.",
+
+    "I should explore somewhere new.",
+
+    "What could I learn today?",
+
+    "I wonder what is beyond the island.",
+
+    "I should remember what I discover.",
+
+    "Maybe I should investigate something interesting.",
+
+    "I wonder how my world works.",
+
+    "There might be something new to discover."
+
+];
+
+
+function think(text) {
+
+    thoughtElement.textContent =
+        text;
+
+}
+
+
+function randomThought() {
+
+    const thought =
+        thoughts[
+            Math.floor(
+                Math.random() *
+                thoughts.length
+            )
+        ];
+
+
+    think(
+        thought
+    );
+
+
+    addLog(
+        "Thought: " +
+        thought
+    );
+
+}
+
+
+/* =====================================================
+   ACTIVITY LOG
+===================================================== */
+
+function addLog(text) {
+
+    const element =
+        document.createElement(
+            "div"
         );
 
-    });
 
-}
-
-
-function clearLog() {
-
-    activity = [];
-
-    displayActivity();
-
-}
+    element.className =
+        "log-item";
 
 
-/* =========================================================
-   AI STATE
-========================================================= */
-
-let aiRunning = true;
-
-
-function toggleAI() {
-
-    aiRunning =
-        !aiRunning;
+    element.textContent =
+        "[" +
+        new Date()
+            .toLocaleTimeString() +
+        "] " +
+        text;
 
 
-    document.getElementById(
-        "pauseButton"
-    ).textContent =
-        aiRunning
-        ? "⏸ Pause"
-        : "▶ Resume";
-
-
-    logActivity(
-        aiRunning
-        ? "▶️ AI resumed."
-        : "⏸️ AI paused."
-    );
-
-}
-
-
-/* =========================================================
-   ROBOT
-========================================================= */
-
-const robot =
-    document.getElementById(
-        "robot"
+    logElement.prepend(
+        element
     );
 
 
-let robotX = 355;
-let robotZ = 330;
+    while (
+        logElement.children.length >
+        30
+    ) {
 
-let targetX = 355;
-let targetZ = 330;
+        logElement.removeChild(
+            logElement.lastChild
+        );
+
+    }
+
+}
 
 
-function chooseTarget() {
+/* =====================================================
+   AUTONOMOUS MOVEMENT
+===================================================== */
+
+let targetX =
+    0;
+
+let targetZ =
+    0;
+
+
+function chooseDestination() {
 
     targetX =
-        70 +
-        Math.random() *
-        620;
+        (Math.random() - 0.5) * 9;
 
 
     targetZ =
-        80 +
-        Math.random() *
-        620;
+        (Math.random() - 0.5) * 9;
 
 
-    logActivity(
-        "🚶 I chose somewhere new to explore."
+    addLog(
+        "I chose a new place to explore."
     );
 
 }
 
 
-chooseTarget();
+chooseDestination();
 
 
-function moveRobot() {
-
-    if (!aiRunning) return;
-
+function moveAI() {
 
     const dx =
         targetX -
-        robotX;
+        ai.position.x;
 
 
     const dz =
         targetZ -
-        robotZ;
+        ai.position.z;
 
 
     const distance =
@@ -1846,282 +988,301 @@ function moveRobot() {
 
 
     if (
-        distance < 5
+        distance <
+        0.2
     ) {
 
-        chooseTarget();
+        chooseDestination();
+
+        randomThought();
 
         return;
 
     }
 
 
-    robotX +=
-        dx /
-        distance *
-        1.3;
+    const speed =
+        0.025;
 
 
-    robotZ +=
-        dz /
-        distance *
-        1.3;
+    ai.position.x +=
+        (dx / distance) *
+        speed;
 
 
-    robot.style.left =
-        robotX + "px";
+    ai.position.z +=
+        (dz / distance) *
+        speed;
 
 
-    robot.style.top =
-        robotZ + "px";
-
-
-    const bob =
-        Math.sin(
-            Date.now() *
-            .015
-        ) * 2;
-
-
-    robot.style.transform =
-        "translateZ(" +
-        bob +
-        "px)";
-
-}
-
-
-setInterval(
-    moveRobot,
-    30
-);
-
-
-/* =========================================================
-   OBJECT DETECTION
-========================================================= */
-
-const objects = [
-
-    {
-        x: 180,
-        z: 400,
-        name: "blue cube"
-    },
-
-    {
-        x: 520,
-        z: 230,
-        name: "purple cube"
-    },
-
-    {
-        x: 100,
-        z: 150,
-        name: "green cube"
-    },
-
-    {
-        x: 550,
-        z: 500,
-        name: "orange cube"
-    }
-
-];
-
-
-let lastObject = null;
-
-
-setInterval(
-    function() {
-
-        if (!aiRunning)
-            return;
-
-
-        for (
-            const object
-            of objects
-        ) {
-
-            const dx =
-                robotX -
-                object.x;
-
-
-            const dz =
-                robotZ -
-                object.z;
-
-
-            const distance =
-                Math.sqrt(
-                    dx * dx +
-                    dz * dz
-                );
-
-
-            if (
-                distance < 90
-            ) {
-
-                if (
-                    lastObject !==
-                    object.name
-                ) {
-
-                    lastObject =
-                        object.name;
-
-
-                    showThought(
-                        "I'm near the " +
-                        object.name +
-                        ". I wonder what it does."
-                    );
-
-
-                    logActivity(
-                        "🔎 Investigating " +
-                        object.name
-                    );
-
-                }
-
-            }
-
-        }
-
-    },
-    1000
-);
-
-
-/* =========================================================
-   UI
-========================================================= */
-
-function hideUI() {
-
-    document.body
-        .classList
-        .add("ui-hidden");
-
-}
-
-
-function showUI() {
-
-    document.body
-        .classList
-        .remove("ui-hidden");
-
-}
-
-
-/* =========================================================
-   MODALS
-========================================================= */
-
-function openModal(id) {
-
-    document
-        .getElementById(id)
-        .classList
-        .add("open");
-
-
-    if (
-        id === "memoryModal"
-    ) {
-
-        displayMemories();
-
-    }
-
-}
-
-
-function closeModal(id) {
-
-    document
-        .getElementById(id)
-        .classList
-        .remove("open");
-
-}
-
-
-/* Close modal by tapping outside */
-
-document
-    .querySelectorAll(".modal")
-    .forEach(modal => {
-
-        modal.addEventListener(
-            "click",
-            function(event) {
-
-                if (
-                    event.target ===
-                    modal
-                ) {
-
-                    modal.classList
-                        .remove("open");
-
-                }
-
-            }
+    ai.rotation.y =
+        Math.atan2(
+            dx,
+            dz
         );
 
-    });
+}
 
 
-/* =========================================================
-   STARTUP
-========================================================= */
+/* =====================================================
+   INTERNET RESEARCH
+===================================================== */
 
-displayMemories();
+/*
+   This uses Wikipedia's public REST API.
 
-displayActivity();
+   It does NOT require an AI API key.
+*/
+
+document
+    .getElementById(
+        "researchButton"
+    )
+    .addEventListener(
+        "click",
+        research
+    );
 
 
-logActivity(
-    "🤖 AI World started."
+async function research() {
+
+    const topic =
+        researchInput
+            .value
+            .trim();
+
+
+    if (!topic)
+        return;
+
+
+    status.textContent =
+        "🔎 Researching...";
+
+
+    think(
+        "I'm researching " +
+        topic +
+        "..."
+    );
+
+
+    addLog(
+        "Started researching: " +
+        topic
+    );
+
+
+    try {
+
+        const url =
+            "https://en.wikipedia.org/api/rest_v1/page/summary/" +
+            encodeURIComponent(
+                topic
+            );
+
+
+        const response =
+            await fetch(
+                url
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not find that page."
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const summary =
+            data.extract ||
+            "I didn't find a useful summary.";
+
+
+        /*
+           Save information.
+        */
+
+        saveMemory(
+            "Research about " +
+            topic +
+            ": " +
+            summary
+        );
+
+
+        think(
+            "I learned something about " +
+            topic +
+            " and remembered it."
+        );
+
+
+        addLog(
+            "Learned about " +
+            topic
+        );
+
+
+        status.textContent =
+            "🟢 Online";
+
+
+        researchInput.value =
+            "";
+
+
+    } catch (error) {
+
+        status.textContent =
+            "🟠 Research failed";
+
+
+        think(
+            "I couldn't access that information."
+        );
+
+
+        addLog(
+            "Research error: " +
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   HIDE UI
+===================================================== */
+
+document
+    .getElementById(
+        "hideButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            ui.classList.toggle(
+                "hidden"
+            );
+
+
+            document
+                .getElementById(
+                    "hideButton"
+                )
+                .textContent =
+                ui.classList.contains(
+                    "hidden"
+                )
+                ? "Show UI"
+                : "Hide UI";
+
+        }
+    );
+
+
+/* =====================================================
+   RESIZE
+===================================================== */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+
+        camera.updateProjectionMatrix();
+
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
 );
 
 
-if (
-    memories.length > 0
-) {
+/* =====================================================
+   STARTUP
+===================================================== */
 
-    logActivity(
-        "🧠 Loaded " +
-        memories.length +
-        " saved memories."
+updateMemoryUI();
+
+
+addLog(
+    "Little AI started."
+);
+
+
+think(
+    "I'm awake. What should I discover?"
+);
+
+
+status.textContent =
+    "🟢 Online";
+
+
+/* =====================================================
+   ANIMATION
+===================================================== */
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
     );
 
-} else {
 
-    logActivity(
-        "🧠 Memory is currently empty."
+    moveAI();
+
+
+    /*
+       Floating animation
+    */
+
+    ai.position.y =
+        Math.sin(
+            Date.now() *
+            0.003
+        ) *
+        0.08;
+
+
+    renderer.render(
+        scene,
+        camera
     );
 
 }
 
 
-/* Think periodically */
+animate();
+
+
+/* =====================================================
+   PERIODIC THOUGHTS
+===================================================== */
 
 setInterval(
-    function() {
+    () => {
 
-        if (aiRunning) {
-
-            makeThought();
-
-        }
+        randomThought();
 
     },
     7000
