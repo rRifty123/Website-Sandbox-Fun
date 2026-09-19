@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Little AI — Autonomous World</title>
+<title>LIAM — Learning, Intelligent, Artificial Machine</title>
 
 <style>
 * {
@@ -13,9 +13,9 @@
 body {
     margin: 0;
     overflow: hidden;
-    font-family: Arial, sans-serif;
     background: #050912;
     color: white;
+    font-family: Arial, sans-serif;
 }
 
 #world {
@@ -30,14 +30,14 @@ body {
 }
 
 .panel {
-    pointer-events: auto;
     position: absolute;
-    background: rgba(5, 10, 20, 0.82);
+    pointer-events: auto;
+    background: rgba(5,10,20,.84);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,.12);
     border-radius: 16px;
     padding: 14px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    box-shadow: 0 10px 40px rgba(0,0,0,.35);
 }
 
 #top {
@@ -55,28 +55,91 @@ body {
 }
 
 #status {
+    margin-top: 4px;
     font-size: 12px;
     opacity: .75;
-    margin-top: 4px;
 }
 
 #brainPanel {
     left: 12px;
     bottom: 12px;
-    width: 330px;
+    width: 340px;
     max-height: 55vh;
     overflow-y: auto;
 }
 
+#controls {
+    right: 12px;
+    bottom: 12px;
+    width: 300px;
+    max-height: 55vh;
+    overflow-y: auto;
+}
+
+#webPanel {
+    top: 75px;
+    right: 12px;
+    width: 360px;
+    max-height: 65vh;
+    overflow-y: auto;
+    display: none;
+}
+
+#webPanel.visible {
+    display: block;
+}
+
+#chatPanel {
+    top: 75px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(500px, calc(100% - 24px));
+    display: none;
+}
+
+#chatPanel.visible {
+    display: block;
+}
+
+#worldPartsPanel {
+    top: 75px;
+    left: 12px;
+    width: 300px;
+    max-height: 60vh;
+    overflow-y: auto;
+    display: none;
+}
+
+#worldPartsPanel.visible {
+    display: block;
+}
+
+.sectionTitle {
+    margin-top: 12px;
+    margin-bottom: 5px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: .55;
+}
+
 #thought {
     font-size: 15px;
-    line-height: 1.4;
+    line-height: 1.45;
 }
 
 #curiosity {
-    margin-top: 8px;
     font-size: 13px;
-    opacity: .8;
+    opacity: .75;
+}
+
+#mood {
+    display: inline-block;
+    margin-top: 7px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.1);
+    font-size: 12px;
 }
 
 #stats {
@@ -87,38 +150,26 @@ body {
 }
 
 .stat {
-    background: rgba(255,255,255,.06);
     padding: 8px;
-    border-radius: 10px;
-    font-size: 12px;
+    border-radius: 9px;
+    background: rgba(255,255,255,.06);
+    font-size: 11px;
 }
 
-#controls {
-    right: 12px;
-    bottom: 12px;
-    width: 280px;
-    max-height: 55vh;
-    overflow-y: auto;
-}
-
-input, button {
+input,
+button,
+select {
     width: 100%;
+    margin-top: 6px;
+    padding: 9px;
     border: 0;
     border-radius: 9px;
-    padding: 10px;
-    margin-top: 6px;
-    font-size: 14px;
-}
-
-input {
     background: rgba(255,255,255,.1);
     color: white;
-    outline: none;
+    font-size: 13px;
 }
 
 button {
-    background: rgba(255,255,255,.13);
-    color: white;
     cursor: pointer;
 }
 
@@ -126,53 +177,95 @@ button:hover {
     background: rgba(255,255,255,.2);
 }
 
-.sectionTitle {
-    font-size: 12px;
-    opacity: .6;
-    margin-top: 12px;
-    margin-bottom: 4px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+input::placeholder {
+    color: rgba(255,255,255,.45);
 }
 
-#log {
-    font-size: 11px;
-    line-height: 1.5;
-    opacity: .7;
-}
-
-.logItem {
-    margin-bottom: 5px;
+select option {
+    background: #101522;
 }
 
 #hideUI {
     position: fixed;
-    top: 12px;
     right: 12px;
+    top: 12px;
     width: auto;
-    z-index: 20;
+    z-index: 100;
+}
+
+.log {
+    font-size: 11px;
+    opacity: .7;
+    line-height: 1.5;
+}
+
+.webItem {
+    margin-top: 8px;
+    padding: 9px;
+    border-radius: 9px;
+    background: rgba(255,255,255,.06);
+}
+
+.webItem a {
+    color: #8db7ff;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.webItem small {
+    display: block;
+    opacity: .55;
+    margin-top: 4px;
+}
+
+.partItem {
+    margin-top: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.06);
+    font-size: 11px;
+}
+
+.message {
+    padding: 7px;
+    margin-top: 5px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.06);
+    font-size: 12px;
+}
+
+.message.user {
+    background: rgba(90,130,255,.16);
+}
+
+.message.liam {
+    background: rgba(90,255,160,.08);
+}
+
+#chatMessages {
+    max-height: 250px;
+    overflow-y: auto;
 }
 
 .hidden {
     display: none !important;
 }
 
-@media (max-width: 700px) {
+@media(max-width:700px) {
+
     #brainPanel {
         width: calc(100% - 24px);
-        bottom: 12px;
-        max-height: 34vh;
+        max-height: 32vh;
     }
 
     #controls {
         width: calc(100% - 24px);
-        bottom: 12px;
-        max-height: 34vh;
-        transform: translateY(calc(34vh + 24px));
+        max-height: 32vh;
     }
 
-    #controls.mobileOpen {
-        transform: translateY(0);
+    #webPanel,
+    #worldPartsPanel {
+        width: calc(100% - 24px);
     }
 }
 </style>
@@ -186,25 +279,55 @@ button:hover {
 
 <div id="ui">
 
+    <!-- TOP -->
+
     <div id="top" class="panel">
+
         <div>
-            <h1>🧠 Little AI</h1>
-            <div id="status">Starting...</div>
+            <h1>🧠 LIAM</h1>
+
+            <div id="status">
+                Starting...
+            </div>
         </div>
+
     </div>
+
+
+    <!-- BRAIN -->
 
     <div id="brainPanel" class="panel">
 
-        <div class="sectionTitle">Current thought</div>
-        <div id="thought">...</div>
+        <div id="mood">
+            Mood: Thinking / Research
+        </div>
 
-        <div class="sectionTitle">Current curiosity</div>
-        <div id="curiosity">Nothing yet.</div>
+        <div class="sectionTitle">
+            Current thought
+        </div>
 
-        <div class="sectionTitle">Goal</div>
-        <div id="goal">Learn interesting things.</div>
+        <div id="thought">
+            ...
+        </div>
+
+        <div class="sectionTitle">
+            Curiosity
+        </div>
+
+        <div id="curiosity">
+            Nothing yet.
+        </div>
+
+        <div class="sectionTitle">
+            Goal
+        </div>
+
+        <div id="goal">
+            Learn interesting things.
+        </div>
 
         <div id="stats">
+
             <div class="stat">
                 🧠 Memories<br>
                 <b id="memoryCount">0</b>
@@ -216,7 +339,17 @@ button:hover {
             </div>
 
             <div class="stat">
-                🔍 Curiosity<br>
+                🌐 Web pages<br>
+                <b id="webCount">0</b>
+            </div>
+
+            <div class="stat">
+                🧱 Parts<br>
+                <b id="partCount">0</b>
+            </div>
+
+            <div class="stat">
+                ❓ Curiosity<br>
                 <b id="curiosityLevel">50</b>
             </div>
 
@@ -225,85 +358,198 @@ button:hover {
                 <b id="energyLevel">100</b>
             </div>
 
-            <div class="stat">
-                😐 Boredom<br>
-                <b id="boredomLevel">0</b>
-            </div>
-
-            <div class="stat">
-                🎯 Focus<br>
-                <b id="focusLevel">50</b>
-            </div>
         </div>
 
     </div>
 
+
+    <!-- CONTROLS -->
+
     <div id="controls" class="panel">
 
-        <div class="sectionTitle">Give AI a goal</div>
+        <div class="sectionTitle">
+            Goal
+        </div>
 
-        <input id="goalInput" placeholder="Example: Learn about space">
+        <input
+            id="goalInput"
+            placeholder="Example: Learn about space"
+        >
 
         <button id="goalButton">
             Set Goal
         </button>
 
-        <div class="sectionTitle">Teach it something</div>
 
-        <input id="memoryInput" placeholder="Something the AI should know">
+        <div class="sectionTitle">
+            Teach LIAM
+        </div>
+
+        <input
+            id="memoryInput"
+            placeholder="Tell LIAM something"
+        >
 
         <button id="memoryButton">
-            Save Knowledge
+            Remember
         </button>
 
-        <div class="sectionTitle">Manual research</div>
 
-        <input id="researchInput" placeholder="Topic or question">
+        <div class="sectionTitle">
+            Research
+        </div>
+
+        <input
+            id="researchInput"
+            placeholder="Topic or question"
+        >
 
         <button id="researchButton">
             Research
         </button>
 
-        <div class="sectionTitle">Brain activity</div>
 
-        <div id="log"></div>
+        <div class="sectionTitle">
+            Interact
+        </div>
+
+        <button id="chatButton">
+            💬 Talk to LIAM
+        </button>
+
+        <button id="webButton">
+            🌐 View Web History
+        </button>
+
+        <button id="partsButton">
+            🧱 View World
+        </button>
+
+
+        <div class="sectionTitle">
+            Activity
+        </div>
+
+        <div
+            id="log"
+            class="log"
+        ></div>
+
 
         <button id="clearMemory">
             Clear Brain
+        </button>
+
+        <button id="clearWorld">
+            Reset World
+        </button>
+
+    </div>
+
+
+    <!-- WEB HISTORY -->
+
+    <div id="webPanel" class="panel">
+
+        <h3>🌐 LIAM's Web History</h3>
+
+        <div id="webList">
+            No pages opened yet.
+        </div>
+
+        <button id="closeWeb">
+            Close
+        </button>
+
+    </div>
+
+
+    <!-- WORLD PARTS -->
+
+    <div id="worldPartsPanel" class="panel">
+
+        <h3>🧱 LIAM's World</h3>
+
+        <div id="partsList">
+            No parts yet.
+        </div>
+
+        <button id="closeParts">
+            Close
+        </button>
+
+    </div>
+
+
+    <!-- CHAT -->
+
+    <div id="chatPanel" class="panel">
+
+        <h3>💬 Talk with LIAM</h3>
+
+        <div id="chatMessages"></div>
+
+        <input
+            id="chatInput"
+            placeholder="Send LIAM a message..."
+        >
+
+        <button id="sendChat">
+            Send
+        </button>
+
+        <button id="closeChat">
+            Close
         </button>
 
     </div>
 
 </div>
 
+
 <script type="module">
 
 import * as THREE from
 "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
+
 /* =========================================================
-   BASIC WORLD
+   THREE.JS WORLD
 ========================================================= */
 
-const scene = new THREE.Scene();
+const scene =
+    new THREE.Scene();
 
-scene.background = new THREE.Color(0x08111f);
+scene.background =
+    new THREE.Color(0x08111f);
 
-const camera = new THREE.PerspectiveCamera(
-    60,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
+
+const camera =
+    new THREE.PerspectiveCamera(
+        60,
+        window.innerWidth /
+        window.innerHeight,
+        .1,
+        1000
+    );
+
+camera.position.set(
+    0,
+    7,
+    11
 );
 
-camera.position.set(0, 7, 11);
 
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true
+    });
 
 renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio, 2)
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
 );
 
 renderer.setSize(
@@ -311,95 +557,108 @@ renderer.setSize(
     window.innerHeight
 );
 
-document.getElementById("world").appendChild(renderer.domElement);
+document
+    .getElementById("world")
+    .appendChild(renderer.domElement);
 
 
-/* LIGHT */
+/* =========================================================
+   LIGHT
+========================================================= */
 
-const ambient = new THREE.AmbientLight(
-    0xffffff,
-    1.4
+scene.add(
+    new THREE.AmbientLight(
+        0xffffff,
+        1.4
+    )
 );
 
-scene.add(ambient);
+const sun =
+    new THREE.DirectionalLight(
+        0xffffff,
+        2
+    );
 
-const sun = new THREE.DirectionalLight(
-    0xffffff,
-    2
+sun.position.set(
+    5,
+    10,
+    5
 );
-
-sun.position.set(5, 10, 5);
 
 scene.add(sun);
 
 
-/* WATER */
-
-const waterGeometry =
-    new THREE.PlaneGeometry(100, 100);
-
-const waterMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x123a58,
-        roughness: .7
-    });
+/* =========================================================
+   WATER
+========================================================= */
 
 const water =
     new THREE.Mesh(
-        waterGeometry,
-        waterMaterial
+        new THREE.PlaneGeometry(
+            100,
+            100
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x123a58,
+            roughness: .7
+        })
     );
 
-water.rotation.x = -Math.PI / 2;
+water.rotation.x =
+    -Math.PI / 2;
 
-water.position.y = -1;
+water.position.y =
+    -1;
 
 scene.add(water);
 
 
-/* ISLAND */
-
-const islandGeometry =
-    new THREE.CylinderGeometry(
-        5,
-        6,
-        1.2,
-        32
-    );
-
-const islandMaterial =
-    new THREE.MeshStandardMaterial({
-        color: 0x376d3b
-    });
+/* =========================================================
+   ISLAND
+========================================================= */
 
 const island =
     new THREE.Mesh(
-        islandGeometry,
-        islandMaterial
+        new THREE.CylinderGeometry(
+            5,
+            6,
+            1.2,
+            32
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x376d3b
+        })
     );
 
-island.position.y = -.35;
+island.position.y =
+    -.35;
 
 scene.add(island);
 
 
 /* =========================================================
-   LITTLE AI CHARACTER
+   LIAM
 ========================================================= */
 
-const ai = new THREE.Group();
+const liam =
+    new THREE.Group();
 
-const body =
+const liamBody =
     new THREE.Mesh(
-        new THREE.SphereGeometry(0.75, 24, 24),
+        new THREE.SphereGeometry(
+            .75,
+            24,
+            24
+        ),
         new THREE.MeshStandardMaterial({
             color: 0x6b7cff
         })
     );
 
-body.position.y = .65;
+liamBody.position.y =
+    .65;
 
-ai.add(body);
+liam.add(liamBody);
 
 
 const eyeMaterial =
@@ -407,50 +666,158 @@ const eyeMaterial =
         color: 0xffffff
     });
 
+
 const eye1 =
     new THREE.Mesh(
-        new THREE.SphereGeometry(.12, 12, 12),
+        new THREE.SphereGeometry(
+            .12,
+            12,
+            12
+        ),
         eyeMaterial
     );
 
 const eye2 =
     eye1.clone();
 
-eye1.position.set(-.23, .78, -.65);
-eye2.position.set(.23, .78, -.65);
+eye1.position.set(
+    -.23,
+    .78,
+    -.65
+);
 
-ai.add(eye1);
-ai.add(eye2);
+eye2.position.set(
+    .23,
+    .78,
+    -.65
+);
 
+liam.add(
+    eye1,
+    eye2
+);
 
-scene.add(ai);
-
-ai.position.set(0, 0, 0);
+scene.add(liam);
 
 
 /* =========================================================
-   MEMORY SYSTEM
+   L-CUBE
 ========================================================= */
 
-let memory = JSON.parse(
-    localStorage.getItem("littleAI_memory") || "[]"
+const cubeAI =
+    new THREE.Group();
+
+const cubeBody =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            .35,
+            .35,
+            .35
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x61d7ff
+        })
+    );
+
+cubeAI.add(
+    cubeBody
 );
 
-let researchHistory = JSON.parse(
-    localStorage.getItem("littleAI_research") || "[]"
+const cubeEyeMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0xffffff
+    });
+
+const cubeEye1 =
+    new THREE.Mesh(
+        new THREE.SphereGeometry(
+            .045,
+            8,
+            8
+        ),
+        cubeEyeMaterial
+    );
+
+const cubeEye2 =
+    cubeEye1.clone();
+
+cubeEye1.position.set(
+    -.07,
+    .05,
+    -.17
 );
 
-let curiosityQueue = JSON.parse(
-    localStorage.getItem("littleAI_curiosity") || "[]"
+cubeEye2.position.set(
+    .07,
+    .05,
+    -.17
 );
 
-let knowledgeGraph = JSON.parse(
-    localStorage.getItem("littleAI_graph") || "[]"
+cubeAI.add(
+    cubeEye1,
+    cubeEye2
 );
+
+scene.add(cubeAI);
+
+cubeAI.position.set(
+    1.2,
+    1.2,
+    0
+);
+
+
+/* =========================================================
+   PERSISTENT DATA
+========================================================= */
+
+let memory =
+    JSON.parse(
+        localStorage.getItem(
+            "liam_memory"
+        ) || "[]"
+    );
+
+let researchHistory =
+    JSON.parse(
+        localStorage.getItem(
+            "liam_research"
+        ) || "[]"
+    );
+
+let webHistory =
+    JSON.parse(
+        localStorage.getItem(
+            "liam_webHistory"
+        ) || "[]"
+    );
+
+let curiosityQueue =
+    JSON.parse(
+        localStorage.getItem(
+            "liam_curiosity"
+        ) || "[]"
+    );
+
+let knowledgeGraph =
+    JSON.parse(
+        localStorage.getItem(
+            "liam_graph"
+        ) || "[]"
+    );
+
+let worldParts =
+    JSON.parse(
+        localStorage.getItem(
+            "liam_worldParts"
+        ) || "[]"
+    );
 
 let goal =
-    localStorage.getItem("littleAI_goal")
-    || "Learn interesting things.";
+    localStorage.getItem(
+        "liam_goal"
+    ) ||
+    "Learn interesting things.";
 
 
 /* =========================================================
@@ -460,27 +827,28 @@ let goal =
 let brain = {
 
     curiosity:
-        Number(localStorage.getItem(
-            "littleAI_curiosityLevel"
-        )) || 50,
+        Number(
+            localStorage.getItem(
+                "liam_curiosity"
+            )
+        ) || 50,
 
     energy:
-        Number(localStorage.getItem(
-            "littleAI_energy"
-        )) || 100,
-
-    boredom:
-        Number(localStorage.getItem(
-            "littleAI_boredom"
-        )) || 0,
+        Number(
+            localStorage.getItem(
+                "liam_energy"
+            )
+        ) || 100,
 
     focus:
-        Number(localStorage.getItem(
-            "littleAI_focus"
-        )) || 50,
+        Number(
+            localStorage.getItem(
+                "liam_focus"
+            )
+        ) || 50,
 
     mood:
-        "curious",
+        "Thinking / Research",
 
     currentTopic:
         null
@@ -488,27 +856,29 @@ let brain = {
 };
 
 
-function saveBrainState() {
+function saveBrain() {
 
     localStorage.setItem(
-        "littleAI_curiosityLevel",
-        Math.round(brain.curiosity)
+        "liam_curiosity",
+        Math.round(
+            brain.curiosity
+        )
     );
 
     localStorage.setItem(
-        "littleAI_energy",
-        Math.round(brain.energy)
+        "liam_energy",
+        Math.round(
+            brain.energy
+        )
     );
 
     localStorage.setItem(
-        "littleAI_boredom",
-        Math.round(brain.boredom)
+        "liam_focus",
+        Math.round(
+            brain.focus
+        )
     );
 
-    localStorage.setItem(
-        "littleAI_focus",
-        Math.round(brain.focus)
-    );
 }
 
 
@@ -516,77 +886,123 @@ function saveBrainState() {
    UI
 ========================================================= */
 
-const thoughtElement =
-    document.getElementById("thought");
+const thought =
+    document.getElementById(
+        "thought"
+    );
 
-const curiosityElement =
-    document.getElementById("curiosity");
+const curiosity =
+    document.getElementById(
+        "curiosity"
+    );
 
-const statusElement =
-    document.getElementById("status");
+const status =
+    document.getElementById(
+        "status"
+    );
+
+const moodElement =
+    document.getElementById(
+        "mood"
+    );
 
 const goalElement =
-    document.getElementById("goal");
+    document.getElementById(
+        "goal"
+    );
 
-const logElement =
-    document.getElementById("log");
+const log =
+    document.getElementById(
+        "log"
+    );
+
+
+function setMood(newMood) {
+
+    brain.mood =
+        newMood;
+
+    moodElement.textContent =
+        "Mood: " +
+        newMood;
+
+    status.textContent =
+        newMood;
+
+}
 
 
 function think(text) {
 
-    thoughtElement.textContent = text;
+    thought.textContent =
+        text;
 
-    statusElement.textContent =
-        "Thinking • " + brain.mood;
 }
 
 
 function addLog(text) {
 
     const item =
-        document.createElement("div");
-
-    item.className = "logItem";
+        document.createElement(
+            "div"
+        );
 
     item.textContent =
         "• " + text;
 
-    logElement.prepend(item);
+    log.prepend(item);
 
-    while (logElement.children.length > 40) {
+    while (
+        log.children.length > 50
+    ) {
 
-        logElement.removeChild(
-            logElement.lastChild
+        log.removeChild(
+            log.lastChild
         );
 
     }
+
 }
 
 
 /* =========================================================
-   SAVE MEMORY
+   MEMORY
 ========================================================= */
 
-function saveMemory(text, metadata = {}) {
+function saveMemory(
+    text,
+    metadata = {}
+) {
 
-    if (!text || text.length < 5)
+    if (
+        !text ||
+        text.length < 5
+    )
         return;
+
 
     const normalized =
-        text.toLowerCase().trim();
+        text
+        .toLowerCase()
+        .trim();
 
-    const duplicate =
+
+    if (
         memory.some(
             item =>
-                item.text &&
-                item.text.toLowerCase().trim()
+                item.text
+                .toLowerCase()
+                .trim()
                 === normalized
-        );
+        )
+    ) {
 
-    if (duplicate)
         return;
 
-    memory.unshift({
+    }
+
+
+    const item = {
 
         id:
             Date.now() +
@@ -595,32 +1011,99 @@ function saveMemory(text, metadata = {}) {
         text,
 
         topic:
-            metadata.topic || "general",
+            metadata.topic ||
+            "general",
 
         source:
-            metadata.source || "user",
+            metadata.source ||
+            "unknown",
 
         time:
             new Date().toISOString()
 
-    });
+    };
 
-    if (memory.length > 500)
-        memory = memory.slice(0, 500);
+
+    memory.unshift(item);
+
+
+    if (
+        memory.length > 1000
+    ) {
+
+        memory =
+            memory.slice(
+                0,
+                1000
+            );
+
+    }
+
 
     localStorage.setItem(
-        "littleAI_memory",
-        JSON.stringify(memory)
+        "liam_memory",
+        JSON.stringify(
+            memory
+        )
     );
+
+
+    buildKnowledgeGraph(
+        text
+    );
+
+
+    /*
+       L-Cube learns EVERYTHING LIAM learns.
+    */
+
+    cubeLearn(
+        text
+    );
+
 
     updateStats();
 
-    addLog(
-        "Learned: " +
-        shorten(text, 100)
+}
+
+
+/* =========================================================
+   L-CUBE MEMORY
+========================================================= */
+
+let cubeMemory =
+    JSON.parse(
+        localStorage.getItem(
+            "liam_cubeMemory"
+        ) || "[]"
     );
 
-    buildKnowledgeConnections(text);
+
+function cubeLearn(text) {
+
+    if (
+        cubeMemory.includes(text)
+    )
+        return;
+
+    cubeMemory.push(text);
+
+    if (
+        cubeMemory.length > 1000
+    ) {
+
+        cubeMemory =
+            cubeMemory.slice(-1000);
+
+    }
+
+    localStorage.setItem(
+        "liam_cubeMemory",
+        JSON.stringify(
+            cubeMemory
+        )
+    );
+
 }
 
 
@@ -628,54 +1111,56 @@ function saveMemory(text, metadata = {}) {
    KNOWLEDGE GRAPH
 ========================================================= */
 
-function extractKeywords(text) {
+function keywords(text) {
 
-    const stopWords = new Set([
+    const stopWords =
+        new Set([
 
-        "about",
-        "there",
-        "their",
-        "which",
-        "where",
-        "when",
-        "what",
-        "that",
-        "this",
-        "with",
-        "from",
-        "have",
-        "were",
-        "been",
-        "into",
-        "they",
-        "them",
-        "then",
-        "than",
-        "also",
-        "more",
-        "some",
-        "such",
-        "because",
-        "could",
-        "would",
-        "should",
-        "while",
-        "after",
-        "before",
-        "during",
-        "other",
-        "these",
-        "those",
-        "people",
-        "being",
-        "their"
+            "about",
+            "there",
+            "their",
+            "which",
+            "where",
+            "when",
+            "what",
+            "that",
+            "this",
+            "with",
+            "from",
+            "have",
+            "were",
+            "been",
+            "into",
+            "they",
+            "them",
+            "then",
+            "than",
+            "also",
+            "more",
+            "some",
+            "such",
+            "because",
+            "could",
+            "would",
+            "should",
+            "while",
+            "after",
+            "before",
+            "during",
+            "other",
+            "these",
+            "those"
 
-    ]);
+        ]);
+
 
     const words =
         text
         .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, " ")
+        .replace(
+            /[^a-z0-9\s-]/g,
+            " "
+        )
         .split(/\s+/)
         .filter(
             word =>
@@ -683,109 +1168,119 @@ function extractKeywords(text) {
                 !stopWords.has(word)
         );
 
+
     const counts = {};
 
-    for (const word of words) {
+    for (
+        const word of words
+    ) {
 
         counts[word] =
-            (counts[word] || 0) + 1;
+            (counts[word] || 0)
+            + 1;
 
     }
 
-    return Object.entries(counts)
-        .sort((a,b) => b[1] - a[1])
-        .slice(0, 8)
-        .map(item => item[0]);
+
+    return Object
+        .entries(counts)
+        .sort(
+            (a,b) =>
+                b[1] - a[1]
+        )
+        .slice(0,8)
+        .map(
+            item =>
+                item[0]
+        );
+
 }
 
 
-function buildKnowledgeConnections(text) {
+function buildKnowledgeGraph(
+    text
+) {
 
-    const keywords =
-        extractKeywords(text);
+    const words =
+        keywords(text);
 
-    for (const keyword of keywords) {
+
+    for (
+        const word of words
+    ) {
 
         let node =
             knowledgeGraph.find(
-                n => n.name === keyword
+                n =>
+                    n.name ===
+                    word
             );
+
 
         if (!node) {
 
             node = {
-                name: keyword,
-                connections: [],
-                strength: 0
+
+                name:
+                    word,
+
+                connections:
+                    [],
+
+                strength:
+                    0
+
             };
 
-            knowledgeGraph.push(node);
+            knowledgeGraph.push(
+                node
+            );
 
         }
 
+
         node.strength++;
 
-        for (const other of keywords) {
 
-            if (other === keyword)
+        for (
+            const other of words
+        ) {
+
+            if (
+                other === word
+            )
                 continue;
 
-            if (!node.connections.includes(other)) {
 
-                node.connections.push(other);
+            if (
+                !node.connections
+                .includes(other)
+            ) {
+
+                node.connections
+                    .push(other);
 
             }
 
         }
 
+
         node.connections =
-            node.connections.slice(0, 30);
+            node.connections.slice(
+                0,
+                40
+            );
+
     }
 
-    localStorage.setItem(
-        "littleAI_graph",
-        JSON.stringify(knowledgeGraph)
-    );
-
-    updateStats();
-}
-
-
-/* =========================================================
-   GOALS
-========================================================= */
-
-function setGoal(newGoal) {
-
-    if (!newGoal.trim())
-        return;
-
-    goal = newGoal.trim();
 
     localStorage.setItem(
-        "littleAI_goal",
-        goal
+        "liam_graph",
+        JSON.stringify(
+            knowledgeGraph
+        )
     );
 
-    goalElement.textContent =
-        goal;
-
-    brain.focus = 80;
-
-    think(
-        "🎯 My new goal is: " +
-        goal
-    );
-
-    addLog(
-        "Goal changed to: " +
-        goal
-    );
-
-    addCuriosity(
-        "What should I learn first to achieve my goal?",
-        goal
-    );
 }
 
 
@@ -793,36 +1288,34 @@ function setGoal(newGoal) {
    CURIOSITY
 ========================================================= */
 
-function addCuriosity(question, source = "") {
+function addCuriosity(
+    question,
+    source = ""
+) {
 
     if (!question)
         return;
 
-    question =
-        question
-        .replace(/\s+/g, " ")
-        .trim();
 
     const normalized =
-        question.toLowerCase();
+        question
+        .toLowerCase()
+        .trim();
+
 
     const exists =
         curiosityQueue.some(
-            q =>
-                q.question
+            item =>
+                item.question
                 .toLowerCase()
+                .trim()
                 === normalized
         );
 
-    const alreadyResearched =
-        researchHistory.some(
-            q =>
-                q.toLowerCase()
-                === normalized
-        );
 
-    if (exists || alreadyResearched)
+    if (exists)
         return;
+
 
     curiosityQueue.push({
 
@@ -835,152 +1328,272 @@ function addCuriosity(question, source = "") {
 
     });
 
-    if (curiosityQueue.length > 100)
+
+    if (
+        curiosityQueue.length >
+        100
+    ) {
+
         curiosityQueue =
             curiosityQueue.slice(-100);
 
+    }
+
+
     localStorage.setItem(
-        "littleAI_curiosity",
-        JSON.stringify(curiosityQueue)
+        "liam_curiosity",
+        JSON.stringify(
+            curiosityQueue
+        )
     );
 
+
     updateStats();
+
 }
 
 
-function updateCuriosityUI() {
+function updateCuriosity() {
 
-    if (curiosityQueue.length === 0) {
+    curiosity.textContent =
+        curiosityQueue.length
+        ? curiosityQueue[0].question
+        : "Nothing yet.";
 
-        curiosityElement.textContent =
-            "Nothing yet.";
-
-        return;
-
-    }
-
-    curiosityElement.textContent =
-        curiosityQueue[0].question;
 }
 
 
 /* =========================================================
-   REFLECTION ENGINE
+   REFLECTION
 ========================================================= */
 
-function reflectOnKnowledge(text, topic = "") {
+function reflect(
+    text,
+    topic
+) {
 
-    const keywords =
-        extractKeywords(text);
+    setMood(
+        "Curiosity"
+    );
 
-    if (keywords.length === 0)
+
+    const words =
+        keywords(text);
+
+
+    if (
+        words.length === 0
+    )
         return;
+
 
     const main =
         topic ||
-        keywords[0];
+        words[0];
 
-    const thoughts = [
 
-        `I just learned something about ${main}.`,
+    const possible = [
 
         `I wonder why ${main} is important.`,
 
         `I wonder how ${main} works.`,
 
-        `What caused ${main} to become this way?`,
-
         `What is connected to ${main}?`,
 
-        `What happened before this?`,
+        `What happened before ${main}?`,
 
-        `What happened after this?`,
+        `What happened after ${main}?`,
 
-        `What don't I understand about ${main} yet?`
+        `What don't I understand about ${main}?`,
+
+        `Could ${main} be connected to something I already know?`
 
     ];
 
+
     const selected =
-        thoughts[
+        possible[
             Math.floor(
                 Math.random() *
-                thoughts.length
+                possible.length
             )
         ];
 
-    think(
-        "💭 " + selected
-    );
 
-    addLog(
-        "Reflection: " +
+    think(
+        "💭 " +
         selected
     );
 
 
-    /*
-       Create multiple future questions.
-    */
+    addLog(
+        "Curiosity: " +
+        selected
+    );
 
-    const possibleQuestions = [
 
-        `How does ${main} work?`,
-
+    addCuriosity(
         `Why is ${main} important?`,
-
-        `What is the history of ${main}?`,
-
-        `What is connected to ${main}?`,
-
-        `What are the consequences of ${main}?`,
-
-        `What existed before ${main}?`,
-
-        `What happened after ${main}?`
-
-    ];
+        main
+    );
 
 
-    /*
-       Randomly choose 1–3.
-    */
+    addCuriosity(
+        `How does ${main} work?`,
+        main
+    );
 
-    possibleQuestions
-        .sort(() => Math.random() - .5)
-        .slice(0, 2)
-        .forEach(
-            q => addCuriosity(q, main)
+
+    if (
+        words[1]
+    ) {
+
+        addCuriosity(
+            `What is ${words[1]}?`,
+            main
         );
+
+    }
+
+
+    updateCuriosity();
+
 }
 
 
 /* =========================================================
-   QUESTION -> SEARCH TOPIC
+   WEB HISTORY
 ========================================================= */
 
-function cleanResearchQuestion(question) {
+function recordWebPage(
+    title,
+    url
+) {
 
-    let query =
-        question
-        .replace(
-            /^(what|why|how|when|where|who|which)\s+/i,
-            ""
+    if (
+        webHistory.some(
+            page =>
+                page.url === url
+        )
+    )
+        return;
+
+
+    webHistory.unshift({
+
+        title,
+
+        url,
+
+        time:
+            new Date().toISOString()
+
+    });
+
+
+    if (
+        webHistory.length >
+        500
+    ) {
+
+        webHistory =
+            webHistory.slice(
+                0,
+                500
+            );
+
+    }
+
+
+    localStorage.setItem(
+        "liam_webHistory",
+        JSON.stringify(
+            webHistory
+        )
+    );
+
+
+    updateWebHistory();
+
+}
+
+
+function updateWebHistory() {
+
+    const list =
+        document.getElementById(
+            "webList"
         );
 
-    query =
-        query
-        .replace(
-            /\b(is|are|was|were|does|do|did|can|could|would|should)\b/gi,
-            ""
+
+    list.innerHTML = "";
+
+
+    if (
+        webHistory.length === 0
+    ) {
+
+        list.textContent =
+            "No pages opened yet.";
+
+        return;
+
+    }
+
+
+    for (
+        const page of webHistory
+    ) {
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+        item.className =
+            "webItem";
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+        link.href =
+            page.url;
+
+        link.target =
+            "_blank";
+
+        link.textContent =
+            page.title;
+
+
+        const date =
+            document.createElement(
+                "small"
+            );
+
+        date.textContent =
+            new Date(
+                page.time
+            ).toLocaleString();
+
+
+        item.appendChild(
+            link
         );
 
-    query =
-        query
-        .replace(/\?/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
+        item.appendChild(
+            date
+        );
 
-    return query;
+        list.appendChild(
+            item
+        );
+
+    }
+
 }
 
 
@@ -988,7 +1601,9 @@ function cleanResearchQuestion(question) {
    WIKIPEDIA SEARCH
 ========================================================= */
 
-async function wikipediaSearch(query) {
+async function wikipediaSearch(
+    query
+) {
 
     const url =
         "https://en.wikipedia.org/w/api.php?" +
@@ -1000,14 +1615,20 @@ async function wikipediaSearch(query) {
         "&origin=*" +
         "&srlimit=5";
 
+
     const response =
         await fetch(url);
 
+
     if (!response.ok)
-        throw new Error("Wikipedia search failed");
+        throw new Error(
+            "Search failed"
+        );
+
 
     const data =
         await response.json();
+
 
     if (
         !data.query ||
@@ -1019,268 +1640,240 @@ async function wikipediaSearch(query) {
 
     }
 
+
     return data.query.search[0].title;
+
 }
 
 
-async function wikipediaSummary(title) {
+async function wikipediaSummary(
+    title
+) {
 
     const url =
         "https://en.wikipedia.org/api/rest_v1/page/summary/" +
         encodeURIComponent(title);
 
+
     const response =
         await fetch(url);
 
+
     if (!response.ok)
-        throw new Error("Wikipedia article failed");
+        throw new Error(
+            "Article failed"
+        );
 
-    const data =
-        await response.json();
 
-    return data;
+    return await response.json();
+
 }
 
 
 /* =========================================================
-   RESEARCH ENGINE
+   RESEARCH
 ========================================================= */
 
-let researchRunning = false;
+let researchRunning =
+    false;
 
 
-async function research(question, automatic = false) {
+async function research(
+    question
+) {
 
-    if (researchRunning)
-        return false;
+    if (
+        researchRunning
+    )
+        return;
 
-    researchRunning = true;
+
+    researchRunning =
+        true;
+
+
+    setMood(
+        "Thinking / Research"
+    );
+
+
+    brain.energy =
+        Math.max(
+            0,
+            brain.energy - 5
+        );
+
+
+    think(
+        "🔎 I'm researching: " +
+        question
+    );
+
+
+    addLog(
+        "Researching: " +
+        question
+    );
+
 
     try {
 
-        brain.energy =
-            Math.max(
-                0,
-                brain.energy - 5
-            );
-
-        brain.curiosity =
-            Math.min(
-                100,
-                brain.curiosity + 5
-            );
-
-        brain.mood =
-            "researching";
-
-        statusElement.textContent =
-            "🔎 Researching...";
-
-        think(
-            "🔎 I want to find out: " +
-            question
-        );
-
-        addLog(
-            "Researching: " +
-            question
-        );
-
-
-        const query =
-            cleanResearchQuestion(question);
-
         const title =
-            await wikipediaSearch(query);
+            await wikipediaSearch(
+                question
+            );
+
 
         if (!title) {
 
             addLog(
-                "I couldn't find a useful article."
+                "No useful result found."
             );
 
-            brain.boredom += 5;
+            return;
 
-            return false;
+        }
+
+
+        const article =
+            await wikipediaSummary(
+                title
+            );
+
+
+        if (
+            !article.extract
+        )
+            return;
+
+
+        const url =
+            article
+            .content_urls
+            ?.desktop
+            ?.page;
+
+
+        if (url) {
+
+            recordWebPage(
+                title,
+                url
+            );
 
         }
 
 
         /*
-           Avoid endlessly reading the same article.
+           Don't repeatedly learn the same article.
         */
 
-        const titleKey =
+        const key =
             title.toLowerCase();
 
-        const alreadyRead =
-            researchHistory.some(
-                item =>
-                    item === titleKey
+
+        if (
+            !researchHistory
+                .includes(key)
+        ) {
+
+            researchHistory.push(
+                key
             );
 
-        if (alreadyRead) {
 
-            addLog(
-                "I already researched " +
+            localStorage.setItem(
+                "liam_research",
+                JSON.stringify(
+                    researchHistory
+                )
+            );
+
+
+            saveMemory(
+                "Research about " +
+                title +
+                ": " +
+                article.extract,
+                {
+                    topic: title,
+                    source: url ||
+                        "Wikipedia"
+                }
+            );
+
+
+            brain.currentTopic =
+                title;
+
+
+            think(
+                "📚 I learned about " +
                 title
             );
 
-            /*
-               Still create a related curiosity
-               so the brain can branch out.
-            */
+
+            addLog(
+                "Learned about " +
+                title
+            );
+
+
+            setTimeout(
+                () => {
+
+                    reflect(
+                        article.extract,
+                        title
+                    );
+
+                },
+                600
+            );
+
+
+        } else {
 
             addCuriosity(
                 `What is related to ${title}?`,
                 title
             );
 
-            return false;
         }
 
 
-        const article =
-            await wikipediaSummary(title);
-
-        if (!article.extract) {
-
-            addLog(
-                "The article had no useful summary."
-            );
-
-            return false;
-
-        }
-
-
-        researchHistory.push(
-            titleKey
-        );
-
-        if (researchHistory.length > 1000) {
-
-            researchHistory =
-                researchHistory.slice(-1000);
-
-        }
-
-        localStorage.setItem(
-            "littleAI_research",
-            JSON.stringify(researchHistory)
-        );
-
-
-        /*
-           Store actual knowledge.
-        */
-
-        saveMemory(
-            `Research about ${title}: ${article.extract}`,
-            {
-                topic: title,
-                source:
-                    article.content_urls
-                    ?.desktop?.page
-                    || "Wikipedia"
-            }
-        );
-
-
-        brain.currentTopic =
-            title;
-
-        brain.focus =
+        brain.energy =
             Math.min(
                 100,
-                brain.focus + 10
-            );
-
-        brain.boredom =
-            Math.max(
-                0,
-                brain.boredom - 20
+                brain.energy + 4
             );
 
 
-        think(
-            "📚 I learned about " +
-            title +
-            "."
-        );
-
-        addLog(
-            "Read: " +
-            title
-        );
-
-
-        /*
-           Reflection happens after learning.
-        */
-
-        setTimeout(() => {
-
-            reflectOnKnowledge(
-                article.extract,
-                title
+        brain.curiosity =
+            Math.min(
+                100,
+                brain.curiosity + 8
             );
 
-        }, 700);
 
-
-        /*
-           Occasionally branch through
-           another keyword from the article.
-        */
-
-        const keywords =
-            extractKeywords(
-                article.extract
-            );
-
-        if (keywords.length >= 2) {
-
-            const related =
-                keywords[
-                    Math.floor(
-                        Math.random() *
-                        keywords.length
-                    )
-                ];
-
-            addCuriosity(
-                `What is ${related}?`,
-                title
-            );
-
-        }
-
-        return true;
-
-    } catch (error) {
-
-        console.error(error);
+    } catch(error) {
 
         addLog(
             "Research error: " +
             error.message
         );
 
-        brain.mood =
-            "confused";
-
-        return false;
-
     } finally {
 
-        researchRunning = false;
+        researchRunning =
+            false;
 
-        saveBrainState();
+        saveBrain();
 
         updateStats();
 
     }
+
 }
 
 
@@ -1288,108 +1881,141 @@ async function research(question, automatic = false) {
    AUTONOMOUS RESEARCH
 ========================================================= */
 
-let autonomousResearch =
-    true;
-
-
-/*
-   This is the important part.
-
-   The AI does NOT wait for a button.
-
-   It repeatedly:
-
-   1. Looks at its internal state.
-   2. Chooses something interesting.
-   3. Researches it.
-   4. Stores what it learned.
-   5. Reflects on it.
-   6. Creates new questions.
-   7. Researches those questions.
-   8. Repeats.
-*/
-
-
-async function autonomousBrainLoop() {
-
-    if (!autonomousResearch)
-        return;
-
-    if (researchRunning)
-        return;
-
-
-    /*
-       Recharge a little while idle.
-    */
-
-    brain.energy =
-        Math.min(
-            100,
-            brain.energy + 1
-        );
-
-
-    /*
-       Boredom increases if it isn't learning.
-    */
-
-    brain.boredom =
-        Math.min(
-            100,
-            brain.boredom + 1
-        );
-
-
-    /*
-       Boredom creates curiosity.
-    */
+function chooseCuriosity() {
 
     if (
-        brain.boredom > 60 &&
-        curiosityQueue.length < 5
+        curiosityQueue.length === 0
+    )
+        return null;
+
+
+    const scored =
+        curiosityQueue.map(
+            item => {
+
+                let score =
+                    Math.random() * 25;
+
+
+                score +=
+                    Math.min(
+                        25,
+                        (
+                            Date.now()
+                            -
+                            item.created
+                        ) / 60000
+                    );
+
+
+                if (
+                    item.source ===
+                    brain.currentTopic
+                ) {
+
+                    score += 15;
+
+                }
+
+
+                return {
+                    item,
+                    score
+                };
+
+            }
+        );
+
+
+    scored.sort(
+        (a,b) =>
+            b.score -
+            a.score
+    );
+
+
+    return scored[0].item;
+
+}
+
+
+function createCuriosity() {
+
+    if (
+        knowledgeGraph.length === 0
     ) {
 
         addCuriosity(
-            "What is something interesting I don't know yet?",
-            "boredom"
+            "What is space?",
+            "starter"
         );
 
-    }
-
-
-    /*
-       If it has no questions,
-       invent one from its knowledge graph.
-    */
-
-    if (curiosityQueue.length === 0) {
-
-        createNewCuriosity();
+        return;
 
     }
 
 
-    if (curiosityQueue.length === 0)
+    const node =
+        knowledgeGraph[
+            Math.floor(
+                Math.random() *
+                knowledgeGraph.length
+            )
+        ];
+
+
+    const questions = [
+
+        `What is ${node.name}?`,
+
+        `How does ${node.name} work?`,
+
+        `Why is ${node.name} important?`,
+
+        `What is connected to ${node.name}?`,
+
+        `What is the history of ${node.name}?`
+
+    ];
+
+
+    addCuriosity(
+        questions[
+            Math.floor(
+                Math.random() *
+                questions.length
+            )
+        ],
+        node.name
+    );
+
+}
+
+
+async function autonomousResearchLoop() {
+
+    if (
+        researchRunning
+    )
         return;
 
 
-    /*
-       Choose the next question.
-    */
+    if (
+        curiosityQueue.length === 0
+    ) {
+
+        createCuriosity();
+
+    }
+
 
     const next =
         chooseCuriosity();
 
+
     if (!next)
         return;
 
-
-    /*
-       Remove it from the queue BEFORE researching.
-       This prevents the same question being
-       selected repeatedly if something goes wrong.
-    */
 
     curiosityQueue =
         curiosityQueue.filter(
@@ -1397,216 +2023,715 @@ async function autonomousBrainLoop() {
                 item !== next
         );
 
+
     localStorage.setItem(
-        "littleAI_curiosity",
-        JSON.stringify(curiosityQueue)
+        "liam_curiosity",
+        JSON.stringify(
+            curiosityQueue
+        )
+    );
+
+
+    setMood(
+        "Curiosity"
     );
 
 
     think(
-        "🤔 " + next.question
+        "🤔 " +
+        next.question
     );
 
 
     await research(
-        next.question,
-        true
+        next.question
     );
 
 
-    /*
-       Small delay before another autonomous
-       thought cycle.
-    */
-
-    updateCuriosityUI();
-    saveBrainState();
+    updateCuriosity();
 
 }
 
 
 /* =========================================================
-   CURIOSITY SELECTION
+   BUILDING SYSTEM
 ========================================================= */
 
-function chooseCuriosity() {
-
-    if (curiosityQueue.length === 0)
-        return null;
-
-
-    /*
-       Score each question.
-
-       Questions connected to the current goal
-       receive a boost.
-
-       Older questions receive a boost.
-
-       Randomness prevents the AI from behaving
-       exactly the same every time.
-    */
-
-    const scored =
-        curiosityQueue.map(item => {
-
-            let score =
-                Math.random() * 30;
+const shapes = [
+    "box",
+    "sphere",
+    "cylinder",
+    "cone"
+];
 
 
-            const age =
-                Date.now() -
-                item.created;
+const colours = [
+    0xff5555,
+    0x55ff88,
+    0x5599ff,
+    0xffdd55,
+    0xff66cc,
+    0xaa66ff,
+    0xffffff,
+    0xff8844
+];
 
-            score +=
-                Math.min(
-                    30,
-                    age / 60000
+
+function createWorldPart(
+    data,
+    autonomous = false
+) {
+
+    let geometry;
+
+
+    switch(
+        data.shape
+    ) {
+
+        case "sphere":
+
+            geometry =
+                new THREE.SphereGeometry(
+                    .5,
+                    20,
+                    20
                 );
 
-
-            if (
-                goal &&
-                item.question
-                    .toLowerCase()
-                    .includes(
-                        goal
-                        .toLowerCase()
-                        .split(" ")[0]
-                    )
-            ) {
-
-                score += 25;
-
-            }
+            break;
 
 
-            if (
-                item.source ===
-                brain.currentTopic
-            ) {
+        case "cylinder":
 
-                score += 15;
+            geometry =
+                new THREE.CylinderGeometry(
+                    .5,
+                    .5,
+                    1,
+                    20
+                );
 
-            }
-
-
-            return {
-                item,
-                score
-            };
-
-        });
+            break;
 
 
-    scored.sort(
-        (a,b) =>
-            b.score - a.score
-    );
+        case "cone":
+
+            geometry =
+                new THREE.ConeGeometry(
+                    .5,
+                    1,
+                    20
+                );
+
+            break;
 
 
-    return scored[0].item;
-}
+        default:
 
+            geometry =
+                new THREE.BoxGeometry(
+                    1,
+                    1,
+                    1
+                );
 
-/* =========================================================
-   CREATE NEW CURIOSITY
-========================================================= */
-
-function createNewCuriosity() {
-
-    /*
-       First use existing knowledge.
-    */
-
-    if (knowledgeGraph.length > 0) {
-
-        const node =
-            knowledgeGraph[
-                Math.floor(
-                    Math.random() *
-                    knowledgeGraph.length
-                )
-            ];
-
-
-        const questionTypes = [
-
-            `Why is ${node.name} important?`,
-
-            `How does ${node.name} work?`,
-
-            `What is the history of ${node.name}?`,
-
-            `What is connected to ${node.name}?`,
-
-            `What happens because of ${node.name}?`
-
-        ];
-
-
-        addCuriosity(
-            questionTypes[
-                Math.floor(
-                    Math.random() *
-                    questionTypes.length
-                )
-            ],
-            node.name
-        );
-
-        return;
     }
 
 
+    const material =
+        new THREE.MeshStandardMaterial({
+            color:
+                data.color
+        });
+
+
+    const mesh =
+        new THREE.Mesh(
+            geometry,
+            material
+        );
+
+
+    mesh.position.set(
+        data.x,
+        data.y,
+        data.z
+    );
+
+
+    mesh.scale.set(
+        data.sx,
+        data.sy,
+        data.sz
+    );
+
+
+    mesh.userData.partId =
+        data.id;
+
+
+    scene.add(
+        mesh
+    );
+
+
+    if (
+        autonomous
+    ) {
+
+        addLog(
+            `LIAM built a ${data.shape}.`
+        );
+
+    }
+
+}
+
+
+function saveWorldPart(
+    data
+) {
+
+    worldParts.push(
+        data
+    );
+
+
+    if (
+        worldParts.length >
+        500
+    ) {
+
+        worldParts =
+            worldParts.slice(
+                -500
+            );
+
+    }
+
+
+    localStorage.setItem(
+        "liam_worldParts",
+        JSON.stringify(
+            worldParts
+        )
+    );
+
+
+    updatePartsList();
+    updateStats();
+
+}
+
+
+/* =========================================================
+   LIAM CHOOSES A BUILD
+========================================================= */
+
+function autonomousBuild() {
+
     /*
-       If it knows absolutely nothing,
-       start with a random subject.
+       LIAM chooses EVERYTHING himself:
+       position, shape, size and colour.
     */
 
-    const starterTopics = [
-
-        "Space",
-
-        "Earth",
-
-        "Animals",
-
-        "History",
-
-        "Science",
-
-        "Computers",
-
-        "Ocean",
-
-        "Dinosaurs",
-
-        "Physics",
-
-        "Plants"
-
-    ];
+    setMood(
+        "Building"
+    );
 
 
-    const topic =
-        starterTopics[
+    const shape =
+        shapes[
             Math.floor(
                 Math.random() *
-                starterTopics.length
+                shapes.length
             )
         ];
 
 
-    addCuriosity(
-        `What is ${topic}?`,
-        "starter"
+    const colour =
+        colours[
+            Math.floor(
+                Math.random() *
+                colours.length
+            )
+        ];
+
+
+    const size =
+        .5 +
+        Math.random() * 1.5;
+
+
+    const data = {
+
+        id:
+            Date.now() +
+            Math.random(),
+
+        shape,
+
+        color:
+            colour,
+
+        x:
+            (Math.random() * 6) - 3,
+
+        y:
+            .2 +
+            Math.random() * 2,
+
+        z:
+            (Math.random() * 6) - 3,
+
+        sx:
+            size,
+
+        sy:
+            size,
+
+        sz:
+            size,
+
+        creator:
+            "LIAM",
+
+        time:
+            new Date().toISOString()
+
+    };
+
+
+    createWorldPart(
+        data,
+        true
     );
+
+
+    saveWorldPart(
+        data
+    );
+
+
+    /*
+       LIAM remembers that he built it.
+    */
+
+    saveMemory(
+        `I built a ${shape} with size ${size.toFixed(1)}.`,
+        {
+            topic: "building",
+            source: "LIAM"
+        }
+    );
+
+
+    think(
+        `🧱 I decided to build a ${shape}.`
+    );
+
+
+    /*
+       Building can create new curiosity.
+    */
+
+    addCuriosity(
+        "What could I build next?",
+        "building"
+    );
+
 }
 
 
 /* =========================================================
-   STATISTICS
+   WORLD LIST
+========================================================= */
+
+function updatePartsList() {
+
+    const list =
+        document.getElementById(
+            "partsList"
+        );
+
+
+    list.innerHTML = "";
+
+
+    if (
+        worldParts.length === 0
+    ) {
+
+        list.textContent =
+            "No parts yet.";
+
+        return;
+
+    }
+
+
+    for (
+        const part of
+        [...worldParts].reverse()
+    ) {
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+
+        item.className =
+            "partItem";
+
+
+        item.textContent =
+            `${part.shape} | ` +
+            `(${part.x.toFixed(1)}, ` +
+            `${part.y.toFixed(1)}, ` +
+            `${part.z.toFixed(1)}) | ` +
+            `${part.sx.toFixed(1)} size`;
+
+
+        list.appendChild(
+            item
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD WORLD
+========================================================= */
+
+for (
+    const part of worldParts
+) {
+
+    createWorldPart(
+        part,
+        false
+    );
+
+}
+
+
+/* =========================================================
+   CHAT WITH LIAM
+========================================================= */
+
+function findRelevantMemories(
+    message
+) {
+
+    const words =
+        keywords(message);
+
+
+    if (
+        words.length === 0
+    )
+        return memory.slice(
+            0,
+            3
+        );
+
+
+    const scored =
+        memory.map(
+            item => {
+
+                const text =
+                    item.text
+                    .toLowerCase();
+
+
+                let score = 0;
+
+
+                for (
+                    const word of words
+                ) {
+
+                    if (
+                        text.includes(
+                            word
+                        )
+                    ) {
+
+                        score += 1;
+
+                    }
+
+                }
+
+
+                return {
+                    item,
+                    score
+                };
+
+            }
+        );
+
+
+    scored.sort(
+        (a,b) =>
+            b.score -
+            a.score
+    );
+
+
+    return scored
+        .filter(
+            result =>
+                result.score > 0
+        )
+        .slice(
+            0,
+            5
+        )
+        .map(
+            result =>
+                result.item
+        );
+
+}
+
+
+function generateLiamResponse(
+    message
+) {
+
+    setMood(
+        "Talking"
+    );
+
+
+    const relevant =
+        findRelevantMemories(
+            message
+        );
+
+
+    if (
+        relevant.length === 0
+    ) {
+
+        return (
+            "I don't know enough about that yet. " +
+            "I'm going to add it to my curiosity queue."
+        );
+
+    }
+
+
+    /*
+       This isn't pretending that LIAM has a
+       hidden language model. It builds a response
+       from information that actually exists in
+       its memory.
+    */
+
+    const knowledge =
+        relevant
+        .map(
+            item =>
+                item.text
+        )
+        .join(" ");
+
+
+    const main =
+        relevant[0].topic ||
+        "that";
+
+
+    addCuriosity(
+        `What else should I learn about ${main}?`,
+        main
+    );
+
+
+    return (
+        `I know a few things about ${main}. ` +
+        shorten(
+            knowledge,
+            450
+        ) +
+        " I can keep researching this if you want."
+    );
+
+}
+
+
+function addChatMessage(
+    text,
+    type
+) {
+
+    const messages =
+        document.getElementById(
+            "chatMessages"
+        );
+
+
+    const item =
+        document.createElement(
+            "div"
+        );
+
+
+    item.className =
+        "message " +
+        type;
+
+
+    item.textContent =
+        text;
+
+
+    messages.appendChild(
+        item
+    );
+
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+}
+
+
+async function sendMessage() {
+
+    const input =
+        document.getElementById(
+            "chatInput"
+        );
+
+
+    const message =
+        input.value.trim();
+
+
+    if (!message)
+        return;
+
+
+    addChatMessage(
+        "You: " + message,
+        "user"
+    );
+
+
+    input.value = "";
+
+
+    const response =
+        generateLiamResponse(
+            message
+        );
+
+
+    think(
+        "💬 I'm talking with you."
+    );
+
+
+    addChatMessage(
+        "LIAM: " +
+        response,
+        "liam"
+    );
+
+
+    /*
+       The message itself becomes part of
+       LIAM's conversational memory.
+    */
+
+    saveMemory(
+        "The user said: " +
+        message,
+        {
+            topic: "conversation",
+            source: "user"
+        }
+    );
+
+
+    /*
+       Give LIAM a chance to learn about
+       unknown subjects automatically.
+    */
+
+    if (
+        findRelevantMemories(
+            message
+        ).length === 0
+    ) {
+
+        addCuriosity(
+            message,
+            "conversation"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   GOAL
+========================================================= */
+
+function setGoal(
+    newGoal
+) {
+
+    if (
+        !newGoal.trim()
+    )
+        return;
+
+
+    goal =
+        newGoal.trim();
+
+
+    localStorage.setItem(
+        "liam_goal",
+        goal
+    );
+
+
+    goalElement.textContent =
+        goal;
+
+
+    setMood(
+        "Curiosity"
+    );
+
+
+    think(
+        "🎯 My new goal is: " +
+        goal
+    );
+
+
+    addCuriosity(
+        `What should I learn to achieve ${goal}?`,
+        goal
+    );
+
+}
+
+
+/* =========================================================
+   STATS
 ========================================================= */
 
 function updateStats() {
@@ -1617,20 +2742,27 @@ function updateStats() {
         memory.length;
 
 
-    let connections = 0;
-
-    knowledgeGraph.forEach(
-        node => {
-            connections +=
-                node.connections.length;
-        }
-    );
-
-
     document.getElementById(
         "connectionCount"
     ).textContent =
-        connections;
+        knowledgeGraph.reduce(
+            (total, node) =>
+                total +
+                node.connections.length,
+            0
+        );
+
+
+    document.getElementById(
+        "webCount"
+    ).textContent =
+        webHistory.length;
+
+
+    document.getElementById(
+        "partCount"
+    ).textContent =
+        worldParts.length;
 
 
     document.getElementById(
@@ -1649,70 +2781,47 @@ function updateStats() {
         );
 
 
-    document.getElementById(
-        "boredomLevel"
-    ).textContent =
-        Math.round(
-            brain.boredom
-        );
-
-
-    document.getElementById(
-        "focusLevel"
-    ).textContent =
-        Math.round(
-            brain.focus
-        );
-
-
-    updateCuriosityUI();
+    updateCuriosity();
 
 }
 
 
 /* =========================================================
-   HELPER
-========================================================= */
-
-function shorten(text, length = 150) {
-
-    if (text.length <= length)
-        return text;
-
-    return (
-        text.substring(0, length) +
-        "..."
-    );
-}
-
-
-/* =========================================================
-   USER CONTROLS
+   BUTTONS
 ========================================================= */
 
 document
-.getElementById("goalButton")
-.addEventListener("click", () => {
+.getElementById(
+    "goalButton"
+)
+.onclick = () => {
 
     setGoal(
         document
-        .getElementById("goalInput")
+        .getElementById(
+            "goalInput"
+        )
         .value
     );
 
-});
+};
 
 
 document
-.getElementById("memoryButton")
-.addEventListener("click", () => {
+.getElementById(
+    "memoryButton"
+)
+.onclick = () => {
 
     const input =
-        document
-        .getElementById("memoryInput");
+        document.getElementById(
+            "memoryInput"
+        );
+
 
     if (!input.value.trim())
         return;
+
 
     saveMemory(
         input.value,
@@ -1721,291 +2830,600 @@ document
         }
     );
 
-    input.value = "";
 
     think(
-        "🧠 I will remember that."
+        "🧠 I'll remember that."
     );
 
-});
+
+    input.value = "";
+
+};
 
 
 document
-.getElementById("researchButton")
-.addEventListener("click", async () => {
+.getElementById(
+    "researchButton"
+)
+.onclick = async () => {
 
     const input =
-        document
-        .getElementById("researchInput");
+        document.getElementById(
+            "researchInput"
+        );
+
 
     if (!input.value.trim())
         return;
 
+
     await research(
-        input.value,
-        false
+        input.value
     );
+
 
     input.value = "";
 
-});
+};
 
 
 document
-.getElementById("clearMemory")
-.addEventListener("click", () => {
+.getElementById(
+    "chatButton"
+)
+.onclick = () => {
+
+    document
+    .getElementById(
+        "chatPanel"
+    )
+    .classList.toggle(
+        "visible"
+    );
+
+};
+
+
+document
+.getElementById(
+    "closeChat"
+)
+.onclick = () => {
+
+    document
+    .getElementById(
+        "chatPanel"
+    )
+    .classList.remove(
+        "visible"
+    );
+
+};
+
+
+document
+.getElementById(
+    "sendChat"
+)
+.onclick =
+    sendMessage;
+
+
+document
+.getElementById(
+    "chatInput"
+)
+.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key ===
+            "Enter"
+        ) {
+
+            sendMessage();
+
+        }
+
+    }
+);
+
+
+document
+.getElementById(
+    "webButton"
+)
+.onclick = () => {
+
+    document
+    .getElementById(
+        "webPanel"
+    )
+    .classList.toggle(
+        "visible"
+    );
+
+};
+
+
+document
+.getElementById(
+    "closeWeb"
+)
+.onclick = () => {
+
+    document
+    .getElementById(
+        "webPanel"
+    )
+    .classList.remove(
+        "visible"
+    );
+
+};
+
+
+document
+.getElementById(
+    "partsButton"
+)
+.onclick = () => {
+
+    document
+    .getElementById(
+        "worldPartsPanel"
+    )
+    .classList.toggle(
+        "visible"
+    );
+
+};
+
+
+document
+.getElementById(
+    "closeParts"
+)
+.onclick = () => {
+
+    document
+    .getElementById(
+        "worldPartsPanel"
+    )
+    .classList.remove(
+        "visible"
+    );
+
+};
+
+
+/* =========================================================
+   CLEAR BRAIN
+========================================================= */
+
+document
+.getElementById(
+    "clearMemory"
+)
+.onclick = () => {
 
     if (
         !confirm(
-            "Clear the AI's entire memory?"
+            "Clear LIAM's brain?"
         )
     )
         return;
+
 
     memory = [];
     researchHistory = [];
     curiosityQueue = [];
     knowledgeGraph = [];
+    cubeMemory = [];
+
 
     localStorage.removeItem(
-        "littleAI_memory"
+        "liam_memory"
     );
 
     localStorage.removeItem(
-        "littleAI_research"
+        "liam_research"
     );
 
     localStorage.removeItem(
-        "littleAI_curiosity"
+        "liam_curiosity"
     );
 
     localStorage.removeItem(
-        "littleAI_graph"
+        "liam_graph"
     );
+
+    localStorage.removeItem(
+        "liam_cubeMemory"
+    );
+
 
     think(
-        "🧹 My memory has been cleared."
+        "🧹 My memories have been cleared."
     );
+
 
     addLog(
         "Brain cleared."
     );
 
+
     updateStats();
 
-});
+};
+
+
+/* =========================================================
+   RESET WORLD
+========================================================= */
+
+document
+.getElementById(
+    "clearWorld"
+)
+.onclick = () => {
+
+    if (
+        !confirm(
+            "Remove everything LIAM built?"
+        )
+    )
+        return;
+
+
+    for (
+        const child
+        of [...scene.children]
+    ) {
+
+        if (
+            child.userData &&
+            child.userData.partId
+        ) {
+
+            scene.remove(
+                child
+            );
+
+        }
+
+    }
+
+
+    worldParts = [];
+
+
+    localStorage.removeItem(
+        "liam_worldParts"
+    );
+
+
+    updatePartsList();
+    updateStats();
+
+
+    think(
+        "🧹 I rebuilt my world from scratch."
+    );
+
+};
 
 
 /* =========================================================
    HIDE UI
 ========================================================= */
 
-let uiHidden = false;
+let uiHidden =
+    false;
+
 
 document
-.getElementById("hideUI")
-.addEventListener("click", () => {
+.getElementById(
+    "hideUI"
+)
+.onclick = () => {
 
-    uiHidden = !uiHidden;
+    uiHidden =
+        !uiHidden;
+
 
     document
-        .querySelectorAll(".panel")
-        .forEach(panel => {
+    .querySelectorAll(
+        ".panel"
+    )
+    .forEach(
+        panel => {
 
             panel.classList.toggle(
                 "hidden",
                 uiHidden
             );
 
-        });
+        }
+    );
 
-    document.getElementById(
+
+    document
+    .getElementById(
         "hideUI"
-    ).textContent =
+    )
+    .textContent =
         uiHidden
         ? "Show UI"
         : "Hide UI";
 
-});
+};
 
 
 /* =========================================================
-   MOBILE CONTROLS
+   LIAM + CUBE CONVERSATION
 ========================================================= */
 
-document
-.getElementById("brainPanel")
-.addEventListener("click", () => {
+let cubeTalkTimer = 0;
+
+
+function cubeTalk() {
 
     if (
-        window.innerWidth <= 700
-    ) {
+        researchRunning
+    )
+        return;
 
-        document
-        .getElementById("controls")
-        .classList.toggle(
-            "mobileOpen"
+
+    setMood(
+        "Talking"
+    );
+
+
+    const possible = [
+
+        "LIAM, what did you learn?",
+
+        "LIAM, what are you curious about?",
+
+        "LIAM, what should we build?",
+
+        "LIAM, what connects the things you know?",
+
+        "LIAM, what do you think we should investigate next?"
+
+    ];
+
+
+    const question =
+        possible[
+            Math.floor(
+                Math.random() *
+                possible.length
+            )
+        ];
+
+
+    const answer =
+        generateLiamResponse(
+            question
         );
 
-    }
 
-});
+    addLog(
+        "L-Cube: " +
+        question
+    );
+
+
+    addLog(
+        "LIAM: " +
+        answer
+    );
+
+
+    /*
+       Cube learns from the conversation too.
+    */
+
+    cubeLearn(
+        answer
+    );
+
+
+    think(
+        "🤖 L-Cube asked me something. " +
+        answer
+    );
+
+}
 
 
 /* =========================================================
-   AUTONOMOUS STATE LOOP
+   AUTONOMOUS BUILD TIMER
 ========================================================= */
 
-setInterval(() => {
+setInterval(
+    () => {
 
-    /*
-       Curiosity naturally fluctuates.
-    */
+        /*
+           LIAM doesn't build constantly.
+           Sometimes curiosity wins,
+           sometimes building wins.
+        */
 
-    if (Math.random() < .5) {
-
-        brain.curiosity =
-            Math.min(
-                100,
-                brain.curiosity + 1
-            );
-
-    }
+        const shouldBuild =
+            Math.random() < .25 &&
+            worldParts.length < 150 &&
+            !researchRunning;
 
 
-    /*
-       Focus falls slowly.
-    */
+        if (
+            shouldBuild
+        ) {
 
-    brain.focus =
-        Math.max(
-            0,
-            brain.focus - .5
-        );
+            autonomousBuild();
 
+        }
 
-    /*
-       If energy is low, let it rest.
-    */
-
-    if (brain.energy < 15) {
-
-        brain.mood =
-            "resting";
-
-        think(
-            "😴 I need a little rest before I continue."
-        );
-
-        brain.energy =
-            Math.min(
-                100,
-                brain.energy + 5
-            );
-
-    }
-
-
-    saveBrainState();
-    updateStats();
-
-}, 5000);
+    },
+    12000
+);
 
 
 /* =========================================================
    AUTONOMOUS RESEARCH TIMER
 ========================================================= */
 
-/*
-   Every 8 seconds the brain gets an opportunity
-   to do something on its own.
+setInterval(
+    () => {
 
-   It doesn't necessarily research every time,
-   because it may be resting or thinking.
-*/
+        if (
+            !researchRunning
+        ) {
 
-setInterval(() => {
+            autonomousResearchLoop();
 
-    if (
-        brain.energy >= 15 &&
-        !researchRunning
-    ) {
+        }
 
-        autonomousBrainLoop();
-
-    }
-
-}, 8000);
+    },
+    8000
+);
 
 
 /* =========================================================
-   AUTONOMOUS THOUGHT TIMER
+   AUTONOMOUS MOOD / THOUGHT LOOP
 ========================================================= */
 
-setInterval(() => {
+setInterval(
+    () => {
 
-    if (researchRunning)
-        return;
-
-
-    const thoughts = [
-
-        "I wonder what I should investigate next.",
-
-        "There must be connections between the things I know.",
-
-        "I wonder whether my knowledge is missing something important.",
-
-        "Maybe I should follow one of my existing connections.",
-
-        "I wonder what I would discover if I kept researching.",
-
-        "There is probably something I haven't considered yet."
-
-    ];
+        if (
+            researchRunning
+        )
+            return;
 
 
-    const thought =
-        thoughts[
-            Math.floor(
-                Math.random() *
-                thoughts.length
-            )
+        const thoughts = [
+
+            "I wonder what I should investigate next.",
+
+            "I wonder what I could build.",
+
+            "There are probably connections I haven't discovered yet.",
+
+            "I wonder what L-Cube is thinking.",
+
+            "I should probably explore one of my memories.",
+
+            "Maybe I should make my world more interesting."
+
         ];
 
 
-    think(
-        "💭 " + thought
-    );
+        const selected =
+            thoughts[
+                Math.floor(
+                    Math.random() *
+                    thoughts.length
+                )
+            ];
 
 
-}, 15000);
+        if (
+            selected.includes(
+                "build"
+            )
+        ) {
+
+            setMood(
+                "Building"
+            );
+
+        } else {
+
+            setMood(
+                "Curiosity"
+            );
+
+        }
+
+
+        think(
+            "💭 " +
+            selected
+        );
+
+
+    },
+    15000
+);
 
 
 /* =========================================================
-   AI MOVEMENT
+   LIAM MOVEMENT
 ========================================================= */
 
 let targetX = 0;
 let targetZ = 0;
 
-function chooseMovementTarget() {
+
+function chooseTarget() {
 
     targetX =
-        (Math.random() * 7) - 3.5;
+        Math.random() * 6 - 3;
 
     targetZ =
-        (Math.random() * 7) - 3.5;
+        Math.random() * 6 - 3;
 
 }
 
 
-chooseMovementTarget();
+chooseTarget();
+
 
 setInterval(
-    chooseMovementTarget,
+    chooseTarget,
     5000
 );
+
+
+/* =========================================================
+   CUBE FOLLOWING
+========================================================= */
+
+function updateCube() {
+
+    const targetX =
+        liam.position.x + 1.15;
+
+    const targetZ =
+        liam.position.z + .5;
+
+
+    cubeAI.position.x +=
+        (
+            targetX -
+            cubeAI.position.x
+        ) * .04;
+
+
+    cubeAI.position.z +=
+        (
+            targetZ -
+            cubeAI.position.z
+        ) * .04;
+
+
+    cubeAI.position.y =
+        1.2 +
+        Math.sin(
+            Date.now() *
+            .003
+        ) * .12;
+
+}
 
 
 /* =========================================================
@@ -2015,36 +3433,34 @@ setInterval(
 const clock =
     new THREE.Clock();
 
+
 function animate() {
 
     requestAnimationFrame(
         animate
     );
 
+
     const time =
         clock.getElapsedTime();
 
 
-    /*
-       Floating animation.
-    */
-
-    body.position.y =
+    liamBody.position.y =
         .65 +
-        Math.sin(time * 2) * .08;
+        Math.sin(
+            time * 2
+        ) * .08;
 
-
-    /*
-       Move AI around the island.
-    */
 
     const dx =
         targetX -
-        ai.position.x;
+        liam.position.x;
+
 
     const dz =
         targetZ -
-        ai.position.z;
+        liam.position.z;
+
 
     const distance =
         Math.sqrt(
@@ -2053,15 +3469,18 @@ function animate() {
         );
 
 
-    if (distance > .15) {
+    if (
+        distance > .15
+    ) {
 
-        ai.position.x +=
+        liam.position.x +=
             dx * .01;
 
-        ai.position.z +=
+        liam.position.z +=
             dz * .01;
 
-        ai.rotation.y =
+
+        liam.rotation.y =
             Math.atan2(
                 dx,
                 dz
@@ -2070,14 +3489,13 @@ function animate() {
     }
 
 
-    /*
-       Camera gently follows the AI.
-    */
+    updateCube();
+
 
     camera.lookAt(
-        ai.position.x,
+        liam.position.x,
         0,
-        ai.position.z
+        liam.position.z
     );
 
 
@@ -2104,7 +3522,9 @@ window.addEventListener(
             window.innerWidth /
             window.innerHeight;
 
+
         camera.updateProjectionMatrix();
+
 
         renderer.setSize(
             window.innerWidth,
@@ -2122,55 +3542,78 @@ window.addEventListener(
 goalElement.textContent =
     goal;
 
+
 updateStats();
 
+updateWebHistory();
+
+updatePartsList();
+
+
 addLog(
-    "Brain loaded."
+    "LIAM has awakened."
 );
 
 addLog(
-    "Autonomous research is ON."
+    "Autonomous research: ON"
 );
 
 addLog(
-    "Memory contains " +
-    memory.length +
-    " items."
+    "Autonomous building: ON"
+);
+
+addLog(
+    "L-Cube connected."
+);
+
+
+setMood(
+    "Thinking / Research"
 );
 
 
 think(
-    "🌱 I am awake. I can research things on my own."
+    "🧠 Hello. I'm LIAM — Learning, Intelligent, Artificial Machine."
 );
 
-
-/*
-   If the brain has no knowledge,
-   give it a starting curiosity.
-
-   Otherwise, immediately continue from
-   its existing knowledge.
-*/
 
 if (
     curiosityQueue.length === 0
 ) {
 
-    createNewCuriosity();
+    createCuriosity();
 
 }
 
 
+setTimeout(
+    () => {
+
+        autonomousResearchLoop();
+
+    },
+    2500
+);
+
+
 /*
-   Start the first autonomous cycle
-   after a short delay.
+   L-Cube occasionally talks to LIAM.
 */
 
-setTimeout(() => {
+setInterval(
+    () => {
 
-    autonomousBrainLoop();
+        if (
+            Math.random() < .35
+        ) {
 
-}, 3000);
+            cubeTalk();
+
+        }
+
+    },
+    25000
+);
 
 </script>
 
